@@ -1,0 +1,2617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>固定资产折旧分析 · IT 资产台账</title>
+<style>
+  *{box-sizing:border-box}
+  :root{
+    color-scheme:light;
+    --surface-1:#fcfcfb;
+    --page:#f9f9f7;
+    --ink:#0b0b0b;
+    --ink-2:#52514e;
+    --muted:#898781;
+    --grid:#e1e0d9;
+    --axis:#c3c2b7;
+    --border:rgba(11,11,11,.10);
+    --s1:#2a78d6;
+    --s2:#eb6834;
+    --s3:#1baf7a;
+    --s1-wash:rgba(42,120,214,.08);
+    --track:#cde2fb;
+    --good:#0ca30c;
+    --warning:#fab219;
+    --serious:#ec835a;
+    --critical:#d03b3b;
+    --chip-bg:rgba(11,11,11,.045);
+    --font:system-ui,-apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:where(:not([data-theme="light"])){
+      color-scheme:dark;
+      --surface-1:#1a1a19;
+      --page:#0d0d0d;
+      --ink:#f0efec;
+      --ink-2:#c3c2b7;
+      --muted:#898781;
+      --grid:#2c2c2a;
+      --axis:#383835;
+      --border:rgba(255,255,255,.10);
+      --s1:#3987e5;
+      --s2:#d95926;
+      --s3:#199e70;
+      --s1-wash:rgba(57,135,229,.12);
+      --track:#184f95;
+      --chip-bg:rgba(255,255,255,.06);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --surface-1:#1a1a19;
+    --page:#0d0d0d;
+    --ink:#f0efec;
+    --ink-2:#c3c2b7;
+    --muted:#898781;
+    --grid:#2c2c2a;
+    --axis:#383835;
+    --border:rgba(255,255,255,.10);
+    --s1:#3987e5;
+    --s2:#d95926;
+    --s3:#199e70;
+    --s1-wash:rgba(57,135,229,.12);
+    --track:#184f95;
+    --chip-bg:rgba(255,255,255,.06);
+  }
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--page);
+    color:var(--ink);
+    font-family:var(--font);
+    font-size:14px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  [hidden]{display:none!important}
+  html,body{height:100%}
+  body{overflow:hidden}
+  .app{display:grid;grid-template-columns:236px minmax(0,1fr);height:100vh;height:100dvh}
+  .side{
+    display:flex;flex-direction:column;min-height:0;overflow-y:auto;
+    background:#12211e;color:#eef2ef;padding:20px 14px 16px;
+    border-right:1px solid rgba(255,255,255,.06);
+  }
+  .brand{display:flex;align-items:center;gap:10px;padding:2px 8px 22px}
+  .brand-mark{
+    width:34px;height:34px;border-radius:10px;flex:none;display:grid;place-items:center;
+    background:linear-gradient(145deg,#2c6354,#1baf7a);color:#fff;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);
+  }
+  .brand-text{display:flex;flex-direction:column;min-width:0}
+  .brand-name{font-size:14px;font-weight:600;line-height:1.25;color:#f4f7f5}
+  .brand-sub{font-size:10.5px;color:rgba(255,255,255,.42);margin-top:1px}
+  .side-nav{display:flex;flex-direction:column;gap:2px}
+  .nav-item{
+    display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;
+    color:rgba(255,255,255,.64);text-decoration:none;font-size:13px;line-height:1.3;
+    transition:background .15s ease,color .15s ease;
+  }
+  .nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+  .nav-item.is-active{background:#eef2ef;color:#12211e;font-weight:600}
+  .nav-icon{width:17px;height:17px;flex:none;opacity:.8}
+  .nav-item.is-active .nav-icon{opacity:1}
+  .nav-label{flex:1;min-width:0;white-space:nowrap}
+  .nav-count{
+    font-size:10.5px;line-height:1.65;padding:0 7px;border-radius:999px;
+    background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);
+    font-variant-numeric:tabular-nums;
+  }
+  .nav-item.is-active .nav-count{background:rgba(27,175,122,.14);color:#0f8a5f}
+  .side-foot{margin-top:auto;padding-top:18px}
+  .side-sum{
+    border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);
+    border-radius:10px;padding:12px 13px;
+  }
+  .side-sum-label{font-size:10.5px;letter-spacing:.05em;color:rgba(255,255,255,.45)}
+  .side-sum-value{font-size:18px;font-weight:600;letter-spacing:-.01em;color:#f4f7f5;margin-top:2px}
+  .side-sum-meta{font-size:10.5px;color:rgba(255,255,255,.4);margin-top:4px;line-height:1.5}
+  .side-tip{font-size:10px;color:rgba(255,255,255,.28);padding:12px 4px 0;line-height:1.6}
+  .main{min-width:0;overflow-y:auto;overflow-x:hidden;padding:28px 32px 64px}
+  .main-inner{max-width:1500px;margin:0 auto}
+  .content{min-width:0}
+  .topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+  .title-block{min-width:0}
+  h1{font-size:30px;line-height:1.2;font-weight:650;letter-spacing:-.01em;margin:2px 0 0}
+  .sub{font-size:13px;color:var(--muted);margin:6px 0 0}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{
+    appearance:none;display:inline-flex;align-items:center;justify-content:center;
+    height:34px;padding:0 14px;border:1px solid var(--border);border-radius:9px;
+    background:var(--surface-1);color:var(--ink);font:inherit;font-size:13px;
+    cursor:pointer;transition:background .15s ease,border-color .15s ease;
+  }
+  .btn:hover{background:var(--s1-wash)}
+  .btn.primary{background:var(--s1);border-color:transparent;color:#fff}
+  .btn.primary:hover{filter:brightness(1.05)}
+  .btn.voice-on{border-color:rgba(27,175,122,.55)}
+  .btn.voice-on::before{
+    content:'';width:6px;height:6px;border-radius:50%;background:var(--s3);
+    margin-right:7px;flex:none;
+  }
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+  .filters{
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+    margin:18px 0 20px;padding-top:16px;border-top:1px solid var(--border);
+  }
+  .filter{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2)}
+  select{
+    height:32px;border:1px solid var(--border);border-radius:8px;
+    background:var(--surface-1);color:var(--ink);padding:0 10px;font:inherit;font-size:13px;
+  }
+  select:focus-visible,input:focus-visible,button:focus-visible,summary:focus-visible{
+    outline:2px solid var(--s1);outline-offset:2px;
+  }
+  .filter-meta{
+    margin-left:auto;display:flex;align-items:center;gap:8px;
+    font-size:12px;color:var(--muted);
+  }
+  .view{min-width:0}
+  .card{
+    background:var(--surface-1);border:1px solid var(--border);border-radius:12px;
+    padding:20px 22px;margin:0 0 18px;
+  }
+  .overview{display:grid;grid-template-columns:minmax(260px,.85fr) 1.5fr;gap:30px;padding:24px 26px}
+  .hero{display:flex;flex-direction:column;justify-content:center}
+  .eyebrow{font-size:11.5px;letter-spacing:.06em;color:var(--muted);font-weight:600}
+  .hero-value{font-size:46px;line-height:1.1;font-weight:650;letter-spacing:-.02em;margin-top:6px}
+  .hero-sub{font-size:13px;color:var(--ink-2);margin-top:6px}
+  .hero-sub strong{color:var(--ink);font-weight:600}
+  .meter{height:6px;border-radius:3px;background:var(--track);margin-top:16px;overflow:hidden}
+  .meter-fill{height:100%;border-radius:3px;background:var(--s1);transition:width .3s ease}
+  .meter-caption{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:6px}
+  .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 26px;align-content:center}
+  .kpi{border-top:1px solid var(--border);padding-top:11px}
+  .kpi-value{font-size:22px;font-weight:600;letter-spacing:-.01em;margin-top:3px}
+  .kpi-sub{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .insight{
+    display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;
+    font-size:13px;color:var(--ink-2);margin:0 2px 18px;
+  }
+  .insight .eyebrow{flex:none}
+  .grid-2{display:grid;grid-template-columns:1.7fr 1fr;gap:18px;margin-bottom:18px;align-items:start}
+  .grid-2 .card{margin:0}
+  .home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+  .home-card{
+    display:flex;flex-direction:column;gap:5px;padding:16px 18px 15px;
+    background:var(--surface-1);border:1px solid var(--border);border-radius:12px;
+    color:var(--ink);text-decoration:none;
+    transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease;
+  }
+  .home-card:hover{border-color:var(--s1);box-shadow:0 6px 18px rgba(11,11,11,.06);transform:translateY(-1px)}
+  .home-kicker{font-size:10.5px;letter-spacing:.05em;color:var(--muted);font-weight:600}
+  .home-value{font-size:20px;font-weight:600;letter-spacing:-.01em}
+  .home-desc{font-size:12px;color:var(--ink-2);line-height:1.55}
+  .home-arrow{font-size:12px;color:var(--s1);margin-top:3px}
+  .note-list{font-size:13px;color:var(--ink-2);line-height:1.85;margin:12px 0 0;padding-left:20px}
+  .note-list li{margin:6px 0}
+  .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+  h2{font-size:15px;font-weight:600;margin:0;letter-spacing:-.005em}
+  .card-head p{font-size:12px;color:var(--muted);margin:3px 0 0}
+  .card-head .card-lead{margin:2px 0 0}
+  .link-btn{
+    border:0;background:none;color:var(--s1);font:inherit;font-size:12px;
+    cursor:pointer;padding:3px 2px;white-space:nowrap;
+  }
+  .link-btn:hover{text-decoration:underline}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2);margin:10px 0 2px}
+  .legend-item{display:inline-flex;align-items:center;gap:6px}
+  .swatch{width:10px;height:10px;border-radius:2px;flex:none}
+  .line-key{width:14px;height:2px;border-radius:1px;flex:none}
+  .chart-host{margin-top:8px}
+  .chart-host svg{display:block;width:100%;height:auto;font-family:var(--font)}
+  .chart-empty{padding:44px 0;text-align:center;color:var(--muted);font-size:13px;margin:0}
+  .grid-line{stroke:var(--grid);stroke-width:1;shape-rendering:crispEdges}
+  .axis-line{stroke:var(--axis);stroke-width:1;shape-rendering:crispEdges}
+  .crosshair{stroke:var(--axis);stroke-width:1}
+  .tick-text{fill:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+  .label-text{fill:var(--ink-2);font-size:11.5px}
+  .value-text{fill:var(--ink);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums}
+  .f-s1{fill:var(--s1)}
+  .f-s2{fill:var(--s2)}
+  .f-s3{fill:var(--s3)}
+  .area-s1{fill:var(--s1);fill-opacity:.85}
+  .area-s2{fill:var(--s2);fill-opacity:.85}
+  .dot-s1{fill:var(--s1);stroke:var(--surface-1);stroke-width:2}
+  .dot-s2{fill:var(--s2);stroke:var(--surface-1);stroke-width:2}
+  .hit{fill:transparent;cursor:pointer}
+  .hit:focus{outline:none}
+  .hit:focus-visible{stroke:var(--s1);stroke-width:1.5}
+  .viz-tip{
+    position:fixed;z-index:50;pointer-events:none;
+    background:var(--surface-1);border:1px solid var(--border);border-radius:8px;
+    padding:8px 10px;box-shadow:0 4px 18px rgba(0,0,0,.14);
+    font-size:12px;min-width:150px;max-width:280px;
+  }
+  .tip-title{font-size:11px;color:var(--muted);margin-bottom:5px}
+  .tip-row{display:flex;align-items:center;gap:8px;line-height:1.7}
+  .tip-key{width:12px;height:2px;border-radius:1px;flex:none}
+  .tip-label{color:var(--ink-2);white-space:nowrap}
+  .tip-value{margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .table-view{margin-top:10px;max-height:340px;overflow:auto}
+  .data-table{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+  .data-table th{
+    text-align:left;font-weight:500;color:var(--muted);padding:6px 8px;
+    border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface-1);z-index:1;
+  }
+  .data-table td{padding:6px 8px;border-bottom:1px solid var(--border);color:var(--ink-2)}
+  .data-table .num{text-align:right}
+  .table-wrap{overflow:auto;max-height:540px;margin-top:12px;border-radius:8px}
+  .table-wrap::-webkit-scrollbar,.table-view::-webkit-scrollbar{width:8px;height:8px}
+  .table-wrap::-webkit-scrollbar-thumb,.table-view::-webkit-scrollbar-thumb{
+    background:var(--border);border-radius:999px;
+  }
+  .table-wrap::-webkit-scrollbar-track,.table-view::-webkit-scrollbar-track{background:transparent}
+  .ledger{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1000px}
+  .ledger th{
+    position:sticky;top:0;z-index:1;background:var(--surface-1);text-align:left;
+    font-weight:500;font-size:11.5px;color:var(--muted);padding:9px 10px;
+    border-bottom:1px solid var(--border);white-space:nowrap;
+  }
+  .ledger td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--ink-2);white-space:nowrap}
+  .ledger tbody tr{cursor:pointer}
+  .ledger tbody tr:hover{background:var(--s1-wash)}
+  .ledger tbody tr.selected{background:var(--s1-wash)}
+  .ledger .num{text-align:right;font-variant-numeric:tabular-nums}
+  .sort-btn{
+    background:none;border:0;padding:0;font:inherit;color:inherit;
+    display:inline-flex;align-items:center;gap:4px;cursor:pointer;
+  }
+  .sort-btn:hover{color:var(--ink)}
+  .sort-mark{color:var(--muted);font-size:10px}
+  .row-actions{display:flex;gap:10px;white-space:nowrap}
+  .text-btn{
+    border:0;background:none;padding:0;font:inherit;font-size:12px;
+    color:var(--s1);cursor:pointer;
+  }
+  .text-btn:hover{text-decoration:underline}
+  .text-btn.danger{color:var(--critical)}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;
+    border-radius:999px;background:var(--chip-bg);font-size:11.5px;color:var(--ink-2);white-space:nowrap;
+  }
+  .chip .dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex:none}
+  .chip.critical .dot{background:var(--critical)}
+  .chip.warning .dot{background:var(--warning)}
+  .chip.done .dot{background:var(--muted)}
+  .detail-meta{font-size:13px;color:var(--ink-2);margin:8px 0 14px}
+  .detail-meta strong{color:var(--ink);font-weight:600}
+  .detail-tools{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end}
+  .select-inline{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);white-space:nowrap}
+  .select-inline select{max-width:280px}
+  .method-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:6px 0 4px}
+  .method-box{border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+  .method-name{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-2)}
+  .method-name .dot{width:8px;height:8px;border-radius:2px;flex:none}
+  .method-net-label{font-size:10.5px;color:var(--muted);margin-top:6px}
+  .method-net{font-size:20px;font-weight:600;margin-top:1px;letter-spacing:-.01em}
+  .method-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .note{font-size:12px;color:var(--muted);line-height:1.85;margin-top:6px}
+  .note summary{cursor:pointer;color:var(--ink-2);font-size:12.5px;padding:4px 0}
+  .note ul{margin:8px 0 0;padding-left:20px}
+  .note li{margin:2px 0}
+  dialog{
+    border:1px solid var(--border);border-radius:14px;background:var(--surface-1);
+    color:var(--ink);padding:0;width:min(540px,calc(100vw - 32px));
+    box-shadow:0 24px 70px rgba(0,0,0,.28);
+  }
+  dialog::backdrop{background:rgba(0,0,0,.38)}
+  .dialog-body{padding:22px 24px 20px}
+  .dialog-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .dialog-head h3{font-size:16px;font-weight:600;margin:0}
+  .icon-btn{
+    width:28px;height:28px;border:0;border-radius:6px;background:none;
+    color:var(--muted);font-size:20px;line-height:1;cursor:pointer;
+  }
+  .icon-btn:hover{background:var(--chip-bg);color:var(--ink)}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .field{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--ink-2)}
+  .field input{
+    height:36px;border:1px solid var(--border);border-radius:8px;
+    background:var(--page);color:var(--ink);padding:0 10px;font:inherit;font-size:13px;
+  }
+  .form-hint{font-size:11.5px;color:var(--muted);margin:14px 0 0;line-height:1.7}
+  .dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+  @media (max-width:1100px){
+    .home-grid{grid-template-columns:repeat(2,1fr)}
+    .grid-2{grid-template-columns:1fr}
+  }
+  @media (max-width:900px){
+    html,body{height:auto}
+    body{overflow:auto}
+    .app{display:block;height:auto}
+    .side{
+      position:sticky;top:0;z-index:30;display:block;overflow:visible;
+      padding:10px 12px 8px;
+      box-shadow:0 1px 0 rgba(255,255,255,.06),0 8px 24px rgba(0,0,0,.16);
+    }
+    .brand{padding:0 2px 8px;gap:8px}
+    .brand-mark{width:26px;height:26px;border-radius:8px}
+    .brand-mark svg{width:15px;height:15px}
+    .brand-name{font-size:12.5px}
+    .brand-sub{display:none}
+    .side-nav{flex-direction:row;gap:4px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+    .side-nav::-webkit-scrollbar{display:none}
+    .nav-item{flex:none;padding:6px 9px;border-radius:7px;font-size:12px;color:rgba(255,255,255,.66)}
+    .nav-item.is-active{background:#eef2ef;color:#12211e}
+    .nav-icon,.nav-count{display:none}
+    .side-foot{display:none}
+    .main{overflow:visible;padding:20px 16px 52px}
+    .content{max-width:none}
+    .overview{grid-template-columns:1fr;gap:22px}
+    .method-summary{grid-template-columns:1fr}
+    .form-grid{grid-template-columns:1fr}
+    .filter-meta{width:100%;margin-left:0}
+    .hero-value{font-size:40px}
+    .topbar{align-items:flex-start}
+  }
+  @media (max-width:640px){
+    .home-grid{grid-template-columns:1fr}
+    .kpi-grid{grid-template-columns:1fr}
+    .hero-value{font-size:36px}
+    h1{font-size:24px}
+  }
+  @media print{
+    :root,:root[data-theme="dark"],:root[data-theme="light"]{
+      --surface-1:#fcfcfb;
+      --page:#ffffff;
+      --ink:#0b0b0b;
+      --ink-2:#52514e;
+      --muted:#898781;
+      --grid:#e1e0d9;
+      --axis:#c3c2b7;
+      --border:rgba(11,11,11,.10);
+      --s1:#2a78d6;
+      --s2:#eb6834;
+      --s3:#1baf7a;
+      --s1-wash:rgba(42,120,214,.06);
+      --track:#cde2fb;
+      --chip-bg:rgba(11,11,11,.045);
+    }
+    html,body{height:auto;overflow:visible;background:#fff}
+    .app{display:block;height:auto}
+    .side,.toolbar,.filters,.link-btn,.row-actions,.select-inline,.detail-tools{display:none!important}
+    .main{overflow:visible;height:auto;padding:0}
+    .main-inner,.content{max-width:none}
+    .card{break-inside:avoid;box-shadow:none}
+    .table-wrap,.table-view{max-height:none!important;overflow:visible!important}
+    .ledger{min-width:0}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="side" aria-label="主导航">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 8.5 12 4l9 4.5-9 4.5-9-4.5Z"/>
+          <path d="M3 8.5V16l9 4.5V13"/>
+          <path d="M21 8.5V16l-9 4.5"/>
+        </svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">固定资产</span>
+        <span class="brand-sub">折旧分析台</span>
+      </span>
+    </div>
+
+    <nav class="side-nav" aria-label="目录">
+      <a class="nav-item is-active" href="#s-overview" data-target="s-overview" aria-current="page">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+        <span class="nav-label">总览</span>
+        <span class="nav-count" data-for="s-overview">17</span>
+      </a>
+      <a class="nav-item" href="#s-trend" data-target="s-trend">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3.5 16.5 9 11l3.5 2.5 8-8"/><path d="M14.5 5.5h6v6"/>
+        </svg>
+        <span class="nav-label">折旧趋势</span>
+        <span class="nav-count" data-for="s-trend">24</span>
+      </a>
+      <a class="nav-item" href="#s-breakdown" data-target="s-breakdown">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 7h8"/><path d="M4 12h15"/><path d="M4 17h5"/>
+        </svg>
+        <span class="nav-label">分类与部门</span>
+        <span class="nav-count" data-for="s-breakdown">6</span>
+      </a>
+      <a class="nav-item" href="#s-warning" data-target="s-warning">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 4.5 21 20H3L12 4.5Z"/><path d="M12 10v4"/><path d="M12 17.2h.01"/>
+        </svg>
+        <span class="nav-label">更换预警</span>
+        <span class="nav-count" data-for="s-warning">3</span>
+      </a>
+      <a class="nav-item" href="#s-detail" data-target="s-detail">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5.5 20v-7"/><path d="M12 20V5.5"/><path d="M18.5 20V9"/>
+        </svg>
+        <span class="nav-label">三法对比</span>
+        <span class="nav-count" data-for="s-detail">3</span>
+      </a>
+      <a class="nav-item" href="#s-ledger" data-target="s-ledger">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17"/><path d="M9.5 9.5v10"/>
+        </svg>
+        <span class="nav-label">资产台账</span>
+        <span class="nav-count" data-for="s-ledger">17</span>
+      </a>
+      <a class="nav-item" href="#s-note" data-target="s-note">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><path d="M12 7.6h.01"/>
+        </svg>
+        <span class="nav-label">计算口径</span>
+        <span class="nav-count" data-for="s-note">5</span>
+      </a>
+    </nav>
+
+    <div class="side-foot">
+      <div class="side-sum">
+        <div class="side-sum-label">账面净值</div>
+        <div class="side-sum-value" id="tocNet">—</div>
+        <div class="side-sum-meta" id="tocMeta">—</div>
+      </div>
+      <div class="side-tip">数据仅保存在本机浏览器</div>
+    </div>
+  </aside>
+
+  <div class="main" id="main">
+    <div class="main-inner">
+    <header class="topbar">
+      <div class="title-block">
+        <div class="eyebrow">固定资产折旧分析</div>
+        <h1 id="pageTitle">总览</h1>
+        <p class="sub" id="pageSub">全部资产的账面净值、原值与本月折旧</p>
+      </div>
+      <div class="toolbar">
+        <button class="btn voice-on" type="button" id="btnVoice" aria-pressed="true" title="打开或关闭页面自动语音播报">语音播报：开</button>
+        <button class="btn" type="button" id="btnPrint">打印</button>
+        <button class="btn" type="button" id="btnExport">导出 CSV</button>
+        <button class="btn" type="button" id="btnReset">重置示例</button>
+        <button class="btn" type="button" id="btnTheme">深色模式</button>
+      </div>
+    </header>
+
+    <div class="filters" role="group" aria-label="筛选">
+      <label class="filter">部门
+        <select id="fDept"></select>
+      </label>
+      <label class="filter">类别
+        <select id="fCat"></select>
+      </label>
+      <div class="filter-meta">
+        <span id="filterNote"></span>
+        <span aria-hidden="true">·</span>
+        <span>数据截至 <span id="asOfText"></span></span>
+      </div>
+    </div>
+
+    <main class="content">
+
+  <section class="view" id="s-overview" aria-label="总览">
+  <section class="card overview" aria-label="总体指标">
+    <div class="hero">
+      <div class="eyebrow">账面净值合计</div>
+      <div class="hero-value" id="kNet">—</div>
+      <div class="hero-sub" id="kDelta">—</div>
+      <div class="meter" role="img" aria-label="累计折旧率">
+        <div class="meter-fill" id="meterFill" style="width:0%"></div>
+      </div>
+      <div class="meter-caption"><span>累计折旧率</span><span id="kRate">—</span></div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="eyebrow">资产原值</div>
+        <div class="kpi-value" id="kCost">—</div>
+        <div class="kpi-sub" id="kCount">—</div>
+      </div>
+      <div class="kpi">
+        <div class="eyebrow">累计折旧</div>
+        <div class="kpi-value" id="kAccum">—</div>
+        <div class="kpi-sub">自入账次月起计提</div>
+      </div>
+      <div class="kpi">
+        <div class="eyebrow">本月折旧</div>
+        <div class="kpi-value" id="kMonthly">—</div>
+        <div class="kpi-sub">平均年限法</div>
+      </div>
+      <div class="kpi">
+        <div class="eyebrow">6 个月内到期</div>
+        <div class="kpi-value" id="kDue">—</div>
+        <div class="kpi-sub" id="kDueSub">项资产</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="insight">
+    <span class="eyebrow">摘要</span>
+    <span id="insightText">—</span>
+  </div>
+
+  <div class="home-grid">
+    <a class="home-card" href="#s-trend" data-target="s-trend">
+      <span class="home-kicker">02 · 折旧趋势</span>
+      <span class="home-value" id="homeMonthly">—</span>
+      <span class="home-desc">本月折旧 · 近 24 个月资产结构变化</span>
+      <span class="home-arrow">查看趋势 →</span>
+    </a>
+    <a class="home-card" href="#s-breakdown" data-target="s-breakdown">
+      <span class="home-kicker">03 · 分类与部门</span>
+      <span class="home-value" id="homeBreakdown">—</span>
+      <span class="home-desc">按类别与部门的原值、净值和折旧分摊</span>
+      <span class="home-arrow">查看汇总 →</span>
+    </a>
+    <a class="home-card" href="#s-warning" data-target="s-warning">
+      <span class="home-kicker">04 · 更换预警</span>
+      <span class="home-value" id="homeDue">—</span>
+      <span class="home-desc">未来 6 个月内提完折旧，需提前安排更换</span>
+      <span class="home-arrow">查看清单 →</span>
+    </a>
+    <a class="home-card" href="#s-detail" data-target="s-detail">
+      <span class="home-kicker">05 · 三法对比</span>
+      <span class="home-value">3 种方法</span>
+      <span class="home-desc">单个资产在三种折旧法下的年度折旧差异</span>
+      <span class="home-arrow">选择资产 →</span>
+    </a>
+    <a class="home-card" href="#s-ledger" data-target="s-ledger">
+      <span class="home-kicker">06 · 资产台账</span>
+      <span class="home-value" id="homeAssets">—</span>
+      <span class="home-desc">可编辑台账，支持新增、修改与删除</span>
+      <span class="home-arrow">打开台账 →</span>
+    </a>
+    <a class="home-card" href="#s-note" data-target="s-note">
+      <span class="home-kicker">07 · 计算口径</span>
+      <span class="home-value">5 条说明</span>
+      <span class="home-desc">折旧规则、残值率与税法最低折旧年限</span>
+      <span class="home-arrow">查看口径 →</span>
+    </a>
+  </div>
+  </section>
+
+  <section class="view" id="s-trend" aria-label="折旧趋势" hidden>
+  <div class="grid-2">
+    <figure class="card">
+      <div class="card-head">
+        <div>
+          <h2>资产结构变化</h2>
+          <p>近 24 个月 · 累计折旧与账面净值（元）</p>
+        </div>
+        <button class="link-btn" type="button" data-toggle-table aria-pressed="false">表格</button>
+      </div>
+      <div class="legend" id="legend-structure"></div>
+      <div class="chart-host" id="chart-structure" role="img" aria-label="近 24 个月累计折旧与账面净值堆叠面积图"></div>
+      <div class="table-view" id="table-structure" hidden></div>
+    </figure>
+
+    <figure class="card">
+      <div class="card-head">
+        <div>
+          <h2>月度折旧费用</h2>
+          <p>近 12 个月 · 平均年限法</p>
+        </div>
+        <button class="link-btn" type="button" data-toggle-table aria-pressed="false">表格</button>
+      </div>
+      <div class="chart-host" id="chart-monthly" role="img" aria-label="近 12 个月月度折旧费用柱状图"></div>
+      <div class="table-view" id="table-monthly" hidden></div>
+    </figure>
+  </div>
+  </section>
+
+  <section class="view" id="s-breakdown" aria-label="分类与部门" hidden>
+  <div class="grid-2">
+    <figure class="card">
+      <div class="card-head">
+        <div>
+          <h2>按类别汇总</h2>
+          <p>原值构成 · 累计折旧与账面净值</p>
+        </div>
+        <button class="link-btn" type="button" data-toggle-table aria-pressed="false">表格</button>
+      </div>
+      <div class="legend" id="legend-category"></div>
+      <div class="chart-host" id="chart-category" role="img" aria-label="按资产类别汇总的原值与净值堆叠条形图"></div>
+      <div class="table-view" id="table-category" hidden></div>
+    </figure>
+
+    <figure class="card">
+      <div class="card-head">
+        <div>
+          <h2>部门折旧分摊</h2>
+          <p>本月折旧额 · 按使用部门</p>
+        </div>
+        <button class="link-btn" type="button" data-toggle-table aria-pressed="false">表格</button>
+      </div>
+      <div class="chart-host" id="chart-dept" role="img" aria-label="按部门汇总的本月折旧额条形图"></div>
+      <div class="table-view" id="table-dept" hidden></div>
+    </figure>
+  </div>
+  </section>
+
+  <section class="view card" id="s-warning" aria-label="更换预警" hidden>
+    <div class="card-head">
+      <div>
+        <h2>更换与报废预警</h2>
+        <p>未来 6 个月内提完折旧的资产，按剩余月数排序；点击行可查看三法对比</p>
+      </div>
+      <span class="chip" id="dueBadge"><span class="dot"></span><span id="dueBadgeText">0 项</span></span>
+    </div>
+    <div id="warningBody"></div>
+  </section>
+
+  <section class="view card" id="s-detail" aria-label="三法对比" hidden>
+    <div class="card-head">
+      <div>
+        <h2>单个资产：三种折旧法对比</h2>
+        <p>同一资产在不同方法下的年度折旧额</p>
+      </div>
+      <div class="detail-tools">
+        <label class="select-inline">资产
+          <select id="detailSelect"></select>
+        </label>
+        <button class="link-btn" type="button" data-toggle-table aria-pressed="false">表格</button>
+      </div>
+    </div>
+    <div class="detail-meta" id="detailMeta"></div>
+    <div class="method-summary" id="methodSummary"></div>
+    <div class="legend" id="legend-methods"></div>
+    <div class="chart-host" id="chart-methods" role="img" aria-label="同一资产三种折旧法的年度折旧额对比柱状图"></div>
+    <div class="table-view" id="table-methods" hidden></div>
+  </section>
+
+  <section class="view card" id="s-ledger" aria-label="资产台账" hidden>
+    <div class="card-head">
+      <p class="card-lead">点击行查看三法对比；数据仅保存在本机浏览器</p>
+      <button class="btn primary" type="button" id="btnAdd">新增资产</button>
+    </div>
+    <div class="table-wrap">
+      <table class="ledger" id="ledger"></table>
+    </div>
+  </section>
+
+  <section class="view" id="s-note" aria-label="计算口径" hidden>
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2>折旧规则与最低折旧年限</h2>
+          <p>示例口径，实际以企业会计政策与税务规定为准</p>
+        </div>
+      </div>
+      <ul class="note-list">
+        <li>折旧自固定资产入账的次月起按月计提；平均年限法月折旧额 = 原值 ×（1 − 残值率）÷（使用年限 × 12）。</li>
+        <li>双倍余额递减法：年折旧率 = 2 ÷ 使用年限，按年初账面净值计提，最后两年改为直线法；年数总和法：年折旧额 =（原值 − 残值）× 剩余年限 ÷ 年数总和。</li>
+        <li>示例统一采用 5% 残值率，类别与年限为演示数据，请按企业会计政策调整；税前扣除还需满足税法最低折旧年限。</li>
+        <li>参考《企业所得税法实施条例》第六十条最低折旧年限：房屋、建筑物 20 年；机器、机械和其他生产设备 10 年；与生产经营活动有关的器具、工具、家具等 5 年；飞机、火车、轮船以外的运输工具 4 年；电子设备 3 年。</li>
+        <li>本页为分析工具，不替代财务账套；折旧结果与税务申报口径可能因企业政策、减值、处置等因素不同。</li>
+      </ul>
+    </section>
+  </section>
+
+    </main>
+    </div>
+  </div>
+
+</div>
+
+<div class="viz-tip" id="vizTip" hidden></div>
+
+<dialog id="editDialog" aria-labelledby="dialogTitle">
+  <form id="assetForm" novalidate>
+    <div class="dialog-body">
+      <div class="dialog-head">
+        <h3 id="dialogTitle">新增资产</h3>
+        <button class="icon-btn" type="button" id="btnCloseDialog" aria-label="关闭">×</button>
+      </div>
+      <div class="form-grid">
+        <label class="field">资产编号
+          <input name="code" required maxlength="32" autocomplete="off">
+        </label>
+        <label class="field">资产名称
+          <input name="name" required maxlength="60" autocomplete="off">
+        </label>
+        <label class="field">类别
+          <input name="category" list="catList" required maxlength="20" autocomplete="off">
+        </label>
+        <label class="field">使用部门
+          <input name="dept" list="deptList" required maxlength="20" autocomplete="off">
+        </label>
+        <label class="field">原值（元）
+          <input name="cost" type="number" min="1" step="0.01" required>
+        </label>
+        <label class="field">入账日期
+          <input name="date" type="date" required>
+        </label>
+        <label class="field">使用年限（年）
+          <input name="years" type="number" min="1" max="50" step="1" required>
+        </label>
+        <label class="field">残值率（%）
+          <input name="salvageRate" type="number" min="0" max="100" step="0.5" required>
+        </label>
+      </div>
+      <p class="form-hint">折旧自入账次月起按平均年限法计提；保存后所有图表与台账同步重算。</p>
+      <div class="dialog-actions">
+        <button class="btn" type="button" id="btnCancel">取消</button>
+        <button class="btn primary" type="submit">保存</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+<datalist id="catList"></datalist>
+<datalist id="deptList"></datalist>
+
+<script>
+(function(){
+'use strict';
+
+var NS = 'http://www.w3.org/2000/svg';
+var AS_OF = new Date();
+var CUR = AS_OF.getFullYear() * 12 + AS_OF.getMonth();
+var STORE_KEY = 'fixed-asset-dep-v1';
+var THEME_KEY = 'fixed-asset-theme';
+var VOICE_KEY = 'fixed-asset-voice';
+
+function $(id){ return document.getElementById(id); }
+
+// 图表宽度：整页切换后隐藏页面内的图表宽度为 0，退回卡片宽度测量
+function chartWidth(host, fallback){
+  var w = host.clientWidth;
+  if(!w && host.parentElement) w = host.parentElement.clientWidth;
+  return w || fallback;
+}
+
+var SAMPLE = [
+  { id:'a01', code:'IT-SRV-001', name:'机架式服务器（生产集群）', category:'服务器', dept:'运维部', cost:128000, date:'2022-03-15', years:5, salvageRate:5 },
+  { id:'a02', code:'IT-SRV-002', name:'机架式服务器（测试集群）', category:'服务器', dept:'运维部', cost:76000, date:'2023-06-20', years:5, salvageRate:5 },
+  { id:'a03', code:'IT-SRV-003', name:'GPU 训练服务器', category:'服务器', dept:'研发部', cost:268000, date:'2024-09-10', years:5, salvageRate:5 },
+  { id:'a04', code:'IT-NET-001', name:'核心交换机', category:'网络设备', dept:'运维部', cost:96000, date:'2021-11-08', years:5, salvageRate:5 },
+  { id:'a05', code:'IT-NET-002', name:'汇聚交换机（4 台）', category:'网络设备', dept:'运维部', cost:42000, date:'2023-02-14', years:5, salvageRate:5 },
+  { id:'a06', code:'IT-NET-003', name:'下一代防火墙', category:'网络设备', dept:'运维部', cost:58000, date:'2025-04-22', years:5, salvageRate:5 },
+  { id:'a07', code:'IT-STO-001', name:'分布式存储节点', category:'存储设备', dept:'运维部', cost:156000, date:'2022-08-30', years:5, salvageRate:5 },
+  { id:'a08', code:'IT-STO-002', name:'备份存储阵列', category:'存储设备', dept:'运维部', cost:88000, date:'2024-12-05', years:5, salvageRate:5 },
+  { id:'a09', code:'IT-PC-001', name:'研发工作站（10 台）', category:'终端设备', dept:'研发部', cost:95000, date:'2023-03-10', years:3, salvageRate:5 },
+  { id:'a10', code:'IT-PC-002', name:'办公笔记本（15 台）', category:'终端设备', dept:'行政部', cost:82500, date:'2024-05-18', years:3, salvageRate:5 },
+  { id:'a11', code:'IT-PC-003', name:'财务专用终端（6 台）', category:'终端设备', dept:'财务部', cost:36000, date:'2025-07-01', years:3, salvageRate:5 },
+  { id:'a12', code:'IT-PC-004', name:'市场部笔记本（8 台）', category:'终端设备', dept:'市场部', cost:48000, date:'2026-03-12', years:3, salvageRate:5 },
+  { id:'a13', code:'IT-FUR-001', name:'办公桌椅（一批）', category:'办公家具', dept:'行政部', cost:46000, date:'2021-09-01', years:5, salvageRate:5 },
+  { id:'a14', code:'IT-FUR-002', name:'会议桌与投影设备', category:'办公家具', dept:'行政部', cost:28000, date:'2023-10-25', years:5, salvageRate:5 },
+  { id:'a15', code:'IT-VEH-001', name:'运维工程车', category:'运输工具', dept:'运维部', cost:158000, date:'2022-06-01', years:4, salvageRate:5 },
+  { id:'a16', code:'IT-VEH-002', name:'商务用车', category:'运输工具', dept:'市场部', cost:235000, date:'2024-02-28', years:4, salvageRate:5 },
+  { id:'a17', code:'IT-SRV-004', name:'边缘计算节点', category:'服务器', dept:'运维部', cost:64000, date:'2026-08-15', years:5, salvageRate:5 }
+];
+
+var DEFAULT_CATS = ['服务器','网络设备','存储设备','终端设备','办公家具','运输工具','房屋建筑物','其他'];
+var DEFAULT_DEPTS = ['运维部','研发部','市场部','财务部','行政部','人力资源部','其他'];
+var METHODS = [
+  { key:'sl',  name:'平均年限法', colorVar:'--s1' },
+  { key:'ddb', name:'双倍余额递减法', colorVar:'--s2' },
+  { key:'syd', name:'年数总和法', colorVar:'--s3' }
+];
+
+var assets = loadAssets();
+var filters = { dept:'all', cat:'all' };
+var sort = { key:'cost', dir:-1 };
+var selectedId = null;
+var editingId = null;
+
+/* ---------- 基础工具 ---------- */
+
+function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+
+function loadAssets(){
+  try{
+    var raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return clone(SAMPLE);
+    var obj = JSON.parse(raw);
+    if(!obj || !Array.isArray(obj.assets)) return clone(SAMPLE);
+    return obj.assets;
+  }catch(e){
+    return clone(SAMPLE);
+  }
+}
+
+function saveAssets(){
+  try{
+    localStorage.setItem(STORE_KEY, JSON.stringify({ version:1, assets:assets }));
+  }catch(e){ /* 隐私模式或配额受限时静默失败 */ }
+}
+
+function uid(){
+  return 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+}
+
+function num(v, fallback){
+  var n = Number(v);
+  return isFinite(n) ? n : (fallback || 0);
+}
+
+function fmtInt(n){ return new Intl.NumberFormat('zh-CN').format(Math.round(n)); }
+function fmtMoney(n){ return '¥' + fmtInt(n); }
+
+function fmtWan(v){
+  var w = v / 10000;
+  var abs = Math.abs(w);
+  if(abs >= 100) return w.toFixed(0) + '万';
+  if(abs >= 10) return w.toFixed(1) + '万';
+  return w.toFixed(2).replace(/\.?0+$/, '') + '万';
+}
+
+function fmtAxis(v){
+  if(v === 0) return '0';
+  var abs = Math.abs(v);
+  if(abs >= 1e8){
+    var yi = v / 1e8;
+    return (Number.isInteger(yi) ? String(yi) : yi.toFixed(1).replace(/\.0$/, '')) + '亿';
+  }
+  if(abs >= 1e4){
+    var wan = v / 1e4;
+    if(Math.abs(wan) >= 10 || Number.isInteger(wan)) return String(Math.round(wan)) + '万';
+    return wan.toFixed(1).replace(/\.0$/, '') + '万';
+  }
+  return String(Math.round(v));
+}
+
+function fmtPct(v){ return (v * 100).toFixed(1) + '%'; }
+
+function ym(dateStr){
+  var parts = String(dateStr).split('-');
+  return Number(parts[0]) * 12 + (Number(parts[1]) - 1);
+}
+
+function monthLabel(idx){
+  var y = Math.floor(idx / 12);
+  var m = idx % 12 + 1;
+  return y + '-' + String(m).padStart(2, '0');
+}
+
+function monthShort(idx){
+  return (idx % 12 + 1) + '月';
+}
+
+function formatDate(d){
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function todayISO(){ return formatDate(new Date()); }
+
+function cssVar(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function niceScale(maxVal, count){
+  if(!isFinite(maxVal) || maxVal <= 0) return { step:1, max:1 };
+  var raw = maxVal / count;
+  var exp = Math.pow(10, Math.floor(Math.log10(raw)));
+  var f = raw / exp;
+  var step;
+  if(f <= 1) step = 1;
+  else if(f <= 2) step = 2;
+  else if(f <= 2.5) step = 2.5;
+  else if(f <= 5) step = 5;
+  else step = 10;
+  step *= exp;
+  return { step:step, max:Math.ceil(maxVal / step) * step };
+}
+
+/* ---------- 折旧计算 ---------- */
+
+function calcAsset(a, asOf){
+  var ref = (asOf === undefined) ? CUR : asOf;
+  var cost = num(a.cost);
+  var rate = num(a.salvageRate);
+  var salvage = cost * rate / 100;
+  var start = ym(a.date) + 1;
+  var lifeM = Math.max(1, Math.round(num(a.years) * 12));
+  var end = start + lifeM - 1;
+  var monthly = (cost - salvage) / lifeM;
+  var elapsed = Math.max(0, Math.min(lifeM, ref - start + 1));
+  var accum = monthly * elapsed;
+  var net = cost - accum;
+  var remain = end - ref;
+  return {
+    cost:cost, salvage:salvage, start:start, end:end, lifeM:lifeM,
+    monthly:monthly, elapsed:elapsed, accum:accum, net:net, remain:remain
+  };
+}
+
+function isInService(c){
+  return CUR >= c.start && CUR <= c.end;
+}
+
+function yearlySch(a, method){
+  var n = Math.max(1, Math.round(num(a.years)));
+  var cost = num(a.cost);
+  var salvage = cost * num(a.salvageRate) / 100;
+  var base = cost - salvage;
+  var rows = [];
+  var y, dep, nbv, acc, sum;
+
+  if(method === 'ddb'){
+    nbv = cost;
+    for(y = 0; y < n; y++){
+      if(y < n - 2){
+        dep = nbv * (2 / n);
+      }else{
+        dep = (nbv - salvage) / (n - y);
+      }
+      dep = Math.max(0, Math.min(dep, nbv - salvage));
+      rows.push({ year:y + 1, dep:dep, accum:cost - (nbv - dep), net:nbv - dep });
+      nbv -= dep;
+    }
+  }else if(method === 'syd'){
+    sum = n * (n + 1) / 2;
+    acc = 0;
+    for(y = 0; y < n; y++){
+      dep = base * (n - y) / sum;
+      acc += dep;
+      rows.push({ year:y + 1, dep:dep, accum:acc, net:cost - acc });
+    }
+  }else{
+    dep = base / n;
+    acc = 0;
+    for(y = 0; y < n; y++){
+      acc += dep;
+      rows.push({ year:y + 1, dep:dep, accum:acc, net:cost - acc });
+    }
+  }
+  return rows;
+}
+
+function methodTotals(a, method){
+  var cost = num(a.cost);
+  var rows = yearlySch(a, method);
+  var start = ym(a.date) + 1;
+  var idx = CUR - start;
+  if(idx < 0){
+    return { accum:0, net:cost, monthly:0, elapsed:0 };
+  }
+  var totalM = Math.max(1, Math.round(num(a.years) * 12));
+  var e = Math.min(idx + 1, totalM);
+  var fullY = Math.floor(e / 12);
+  var remM = e % 12;
+  var accum = 0;
+  var i;
+  for(i = 0; i < fullY && i < rows.length; i++) accum += rows[i].dep;
+  if(remM > 0 && fullY < rows.length) accum += rows[fullY].dep * remM / 12;
+  accum = Math.min(accum, cost - cost * num(a.salvageRate) / 100);
+  var curRow = rows[Math.min(fullY, rows.length - 1)];
+  var endMonth = start + totalM - 1;
+  var inService = CUR >= start && CUR <= endMonth;
+  return {
+    accum:accum,
+    net:cost - accum,
+    monthly:inService && curRow ? curRow.dep / 12 : 0,
+    elapsed:e
+  };
+}
+
+/* ---------- 汇总 ---------- */
+
+function filteredAssets(){
+  return assets.filter(function(a){
+    if(filters.dept !== 'all' && a.dept !== filters.dept) return false;
+    if(filters.cat !== 'all' && a.category !== filters.cat) return false;
+    return true;
+  });
+}
+
+function trendData(months){
+  var list = filteredAssets();
+  var out = [];
+  for(var m = CUR - months + 1; m <= CUR; m++){
+    var cost = 0, accum = 0, net = 0, dep = 0;
+    for(var i = 0; i < list.length; i++){
+      var a = list[i];
+      if(ym(a.date) > m) continue;
+      var c = calcAsset(a, m);
+      cost += c.cost;
+      accum += c.accum;
+      net += c.net;
+      if(m >= c.start && m <= c.end) dep += c.monthly;
+    }
+    out.push({ m:m, cost:cost, accum:accum, net:net, dep:dep });
+  }
+  return out;
+}
+
+function categorySummary(){
+  var map = {};
+  filteredAssets().forEach(function(a){
+    if(ym(a.date) > CUR) return;
+    var c = calcAsset(a);
+    if(!map[a.category]) map[a.category] = { category:a.category, cost:0, accum:0, net:0 };
+    map[a.category].cost += c.cost;
+    map[a.category].accum += c.accum;
+    map[a.category].net += c.net;
+  });
+  return Object.keys(map).map(function(k){ return map[k]; })
+    .sort(function(x, y){ return y.cost - x.cost; });
+}
+
+function deptSummary(){
+  var map = {};
+  filteredAssets().forEach(function(a){
+    var c = calcAsset(a);
+    if(!isInService(c)) return;
+    if(!map[a.dept]) map[a.dept] = { dept:a.dept, monthly:0 };
+    map[a.dept].monthly += c.monthly;
+  });
+  return Object.keys(map).map(function(k){ return map[k]; })
+    .sort(function(x, y){ return y.monthly - x.monthly; });
+}
+
+function dueAssets(){
+  return filteredAssets().filter(function(a){
+    var c = calcAsset(a);
+    return isInService(c) && c.remain <= 6;
+  }).sort(function(x, y){
+    return calcAsset(x).remain - calcAsset(y).remain;
+  });
+}
+
+/* ---------- DOM 图表工具 ---------- */
+
+function el(tag, attrs, parent){
+  var node = document.createElementNS(NS, tag);
+  if(attrs){
+    Object.keys(attrs).forEach(function(k){ node.setAttribute(k, attrs[k]); });
+  }
+  if(parent) parent.appendChild(node);
+  return node;
+}
+
+function textEl(parent, x, y, str, cls, anchor){
+  var t = el('text', { x:x, y:y, 'class':cls || 'tick-text' }, parent);
+  if(anchor) t.setAttribute('text-anchor', anchor);
+  t.textContent = str;
+  return t;
+}
+
+function makeSvg(host, W, H){
+  var svg = el('svg', { width:W, height:H, viewBox:'0 0 ' + W + ' ' + H, 'aria-hidden':'true' });
+  host.replaceChildren(svg);
+  return svg;
+}
+
+function drawYAxis(svg, M, iw, ih, scale){
+  var v;
+  for(v = 0; v <= scale.max + scale.step * 0.001; v += scale.step){
+    var y = M.t + ih - (v / scale.max) * ih;
+    el('line', {
+      x1:M.l, x2:M.l + iw, y1:y, y2:y,
+      'class': v === 0 ? 'axis-line' : 'grid-line'
+    }, svg);
+    var label = textEl(svg, M.l - 10, y + 4, fmtAxis(v), 'tick-text', 'end');
+    label.setAttribute('dominant-baseline', 'middle');
+  }
+}
+
+function vBarPath(x, yTop, w, h, r){
+  if(h <= 0 || w <= 0) return '';
+  r = Math.min(r, w / 2, h);
+  var yb = yTop + h;
+  return 'M' + x + ',' + yb +
+    ' L' + x + ',' + (yTop + r) +
+    ' Q' + x + ',' + yTop + ' ' + (x + r) + ',' + yTop +
+    ' L' + (x + w - r) + ',' + yTop +
+    ' Q' + (x + w) + ',' + yTop + ' ' + (x + w) + ',' + (yTop + r) +
+    ' L' + (x + w) + ',' + yb + ' Z';
+}
+
+function hBarPath(x, y, w, h, r){
+  if(w <= 0 || h <= 0) return '';
+  r = Math.min(r, h / 2, w);
+  return 'M' + x + ',' + y +
+    ' L' + (x + w - r) + ',' + y +
+    ' Q' + (x + w) + ',' + y + ' ' + (x + w) + ',' + (y + r) +
+    ' L' + (x + w) + ',' + (y + h - r) +
+    ' Q' + (x + w) + ',' + (y + h) + ' ' + (x + w - r) + ',' + (y + h) +
+    ' L' + x + ',' + (y + h) + ' Z';
+}
+
+function renderLegend(host, items){
+  host.replaceChildren();
+  items.forEach(function(it){
+    var span = document.createElement('span');
+    span.className = 'legend-item';
+    var key = document.createElement('span');
+    key.className = it.kind === 'line' ? 'line-key' : 'swatch';
+    key.style.background = it.color;
+    var label = document.createElement('span');
+    label.textContent = it.label;
+    span.appendChild(key);
+    span.appendChild(label);
+    host.appendChild(span);
+  });
+}
+
+var tipEl = null;
+function showTip(x, y, content){
+  if(!tipEl) tipEl = $('vizTip');
+  tipEl.replaceChildren();
+  if(content.title){
+    var t = document.createElement('div');
+    t.className = 'tip-title';
+    t.textContent = content.title;
+    tipEl.appendChild(t);
+  }
+  (content.rows || []).forEach(function(r){
+    var row = document.createElement('div');
+    row.className = 'tip-row';
+    if(r.color){
+      var k = document.createElement('span');
+      k.className = 'tip-key';
+      k.style.background = r.color;
+      row.appendChild(k);
+    }
+    var l = document.createElement('span');
+    l.className = 'tip-label';
+    l.textContent = r.label;
+    row.appendChild(l);
+    var v = document.createElement('span');
+    v.className = 'tip-value';
+    v.textContent = r.value;
+    row.appendChild(v);
+    tipEl.appendChild(row);
+  });
+  tipEl.hidden = false;
+  var rect = tipEl.getBoundingClientRect();
+  var left = x + 16;
+  var top = y + 16;
+  if(left + rect.width > window.innerWidth - 10) left = x - rect.width - 16;
+  if(top + rect.height > window.innerHeight - 10) top = y - rect.height - 16;
+  if(left < 8) left = 8;
+  if(top < 8) top = 8;
+  tipEl.style.left = left + 'px';
+  tipEl.style.top = top + 'px';
+}
+
+function hideTip(){
+  if(tipEl) tipEl.hidden = true;
+}
+
+function bindTip(node, getContent){
+  node.addEventListener('pointerenter', function(e){ showTip(e.clientX, e.clientY, getContent()); });
+  node.addEventListener('pointermove', function(e){ showTip(e.clientX, e.clientY, getContent()); });
+  node.addEventListener('pointerleave', hideTip);
+  node.addEventListener('focus', function(){
+    var r = node.getBoundingClientRect();
+    showTip(r.left + r.width / 2, r.top, getContent());
+  });
+  node.addEventListener('blur', hideTip);
+}
+
+function setTable(host, headers, rows, numCols){
+  host.replaceChildren();
+  if(!rows.length){
+    var p = document.createElement('p');
+    p.className = 'chart-empty';
+    p.textContent = '暂无数据';
+    host.appendChild(p);
+    return;
+  }
+  var table = document.createElement('table');
+  table.className = 'data-table';
+  var thead = document.createElement('thead');
+  var tr = document.createElement('tr');
+  headers.forEach(function(h, i){
+    var th = document.createElement('th');
+    if(numCols.indexOf(i) >= 0) th.className = 'num';
+    th.textContent = h;
+    tr.appendChild(th);
+  });
+  thead.appendChild(tr);
+  table.appendChild(thead);
+  var tbody = document.createElement('tbody');
+  rows.forEach(function(r){
+    var row = document.createElement('tr');
+    r.forEach(function(v, i){
+      var td = document.createElement('td');
+      if(numCols.indexOf(i) >= 0) td.className = 'num';
+      td.textContent = v;
+      row.appendChild(td);
+    });
+    tbody.appendChild(row);
+  });
+  table.appendChild(tbody);
+  host.appendChild(table);
+}
+
+function showEmpty(host, msg){
+  var p = document.createElement('p');
+  p.className = 'chart-empty';
+  p.textContent = msg || '当前筛选条件下没有资产';
+  host.replaceChildren(p);
+}
+
+/* ---------- 图表：资产结构变化 ---------- */
+
+function renderStructure(){
+  var host = $('chart-structure');
+  var all = filteredAssets();
+  if(!all.length){
+    showEmpty(host);
+    setTable($('table-structure'), ['月份','在册原值','累计折旧','账面净值'], [], [1,2,3]);
+    return;
+  }
+  var data = trendData(24);
+  var W = chartWidth(host, 640);
+  var H = 300;
+  var M = { t:14, r:14, b:34, l:58 };
+  var iw = W - M.l - M.r;
+  var ih = H - M.t - M.b;
+  var svg = makeSvg(host, W, H);
+  var scale = niceScale(Math.max.apply(null, data.map(function(d){ return d.cost; })), 4);
+  var n = data.length;
+  function x(i){ return n === 1 ? M.l + iw / 2 : M.l + (i / (n - 1)) * iw; }
+  function y(v){ return M.t + ih - (v / scale.max) * ih; }
+
+  drawYAxis(svg, M, iw, ih, scale);
+
+  for(var i = 0; i < n; i++){
+    if(i === 0 || i === n - 1 || i % 6 === 0){
+      var anchor = i === 0 ? 'start' : (i === n - 1 ? 'end' : 'middle');
+      var t = textEl(svg, x(i), H - 12, monthLabel(data[i].m), 'tick-text', anchor);
+      t.setAttribute('dominant-baseline', 'auto');
+    }
+  }
+
+  if(data[0].net > 0 || data[0].accum > 0){
+    var netPath = 'M ' + x(0) + ' ' + y(0);
+    for(i = 0; i < n; i++) netPath += ' L ' + x(i) + ' ' + y(data[i].net);
+    netPath += ' L ' + x(n - 1) + ' ' + y(0) + ' Z';
+    el('path', { d:netPath, 'class':'area-s1' }, svg);
+  }
+
+  function accumBottom(d){
+    return d.accum > 0.5 ? Math.max(y(d.cost), y(d.net) - 2) : y(d.cost);
+  }
+  var hasAccum = data.some(function(d){ return d.accum > 0.5; });
+  if(hasAccum){
+    var upper = 'M ' + x(0) + ' ' + accumBottom(data[0]);
+    for(i = 0; i < n; i++) upper += ' L ' + x(i) + ' ' + accumBottom(data[i]);
+    for(i = n - 1; i >= 0; i--) upper += ' L ' + x(i) + ' ' + y(data[i].cost);
+    upper += ' Z';
+    el('path', { d:upper, 'class':'area-s2' }, svg);
+  }
+
+  var cross = el('line', { x1:0, x2:0, y1:M.t, y2:M.t + ih, 'class':'crosshair', visibility:'hidden' }, svg);
+  var dotNet = el('circle', { r:4, 'class':'dot-s1', visibility:'hidden' }, svg);
+  var dotTop = el('circle', { r:4, 'class':'dot-s2', visibility:'hidden' }, svg);
+
+  var overlay = el('rect', { x:M.l, y:M.t, width:iw, height:ih, fill:'transparent' }, svg);
+  overlay.style.cursor = 'crosshair';
+  overlay.addEventListener('pointermove', function(ev){
+    var rect = svg.getBoundingClientRect();
+    var px = (ev.clientX - rect.left) * (W / rect.width);
+    var idx = Math.round((px - M.l) / (iw / Math.max(1, n - 1)));
+    idx = Math.max(0, Math.min(n - 1, idx));
+    var d = data[idx];
+    cross.setAttribute('x1', x(idx));
+    cross.setAttribute('x2', x(idx));
+    cross.setAttribute('visibility', 'visible');
+    dotNet.setAttribute('cx', x(idx));
+    dotNet.setAttribute('cy', y(d.net));
+    dotNet.setAttribute('visibility', 'visible');
+    dotTop.setAttribute('cx', x(idx));
+    dotTop.setAttribute('cy', y(d.cost));
+    dotTop.setAttribute('visibility', 'visible');
+    showTip(ev.clientX, ev.clientY, {
+      title: monthLabel(d.m),
+      rows: [
+        { color:cssVar('--s1'), label:'账面净值', value:fmtMoney(d.net) },
+        { color:cssVar('--s2'), label:'累计折旧', value:fmtMoney(d.accum) },
+        { label:'在册原值', value:fmtMoney(d.cost) }
+      ]
+    });
+  });
+  overlay.addEventListener('pointerleave', function(){
+    cross.setAttribute('visibility', 'hidden');
+    dotNet.setAttribute('visibility', 'hidden');
+    dotTop.setAttribute('visibility', 'hidden');
+    hideTip();
+  });
+
+  renderLegend($('legend-structure'), [
+    { label:'账面净值', color:cssVar('--s1') },
+    { label:'累计折旧', color:cssVar('--s2') }
+  ]);
+
+  setTable($('table-structure'),
+    ['月份','在册原值','累计折旧','账面净值'],
+    data.map(function(d){ return [monthLabel(d.m), fmtMoney(d.cost), fmtMoney(d.accum), fmtMoney(d.net)]; }),
+    [1,2,3]);
+}
+
+/* ---------- 图表：月度折旧 ---------- */
+
+function renderMonthly(){
+  var host = $('chart-monthly');
+  var all = filteredAssets();
+  if(!all.length){
+    showEmpty(host);
+    setTable($('table-monthly'), ['月份','折旧额'], [], [1]);
+    return;
+  }
+  var data = trendData(12);
+  var W = chartWidth(host, 420);
+  var H = 260;
+  var M = { t:18, r:10, b:32, l:48 };
+  var iw = W - M.l - M.r;
+  var ih = H - M.t - M.b;
+  var svg = makeSvg(host, W, H);
+  var scale = niceScale(Math.max.apply(null, data.map(function(d){ return d.dep; })), 3);
+  var n = data.length;
+  var slot = iw / n;
+  var barW = Math.min(24, slot * 0.58);
+  function y(v){ return M.t + ih - (v / scale.max) * ih; }
+
+  drawYAxis(svg, M, iw, ih, scale);
+
+  var maxIdx = 0;
+  for(var i = 1; i < n; i++) if(data[i].dep > data[maxIdx].dep) maxIdx = i;
+
+  data.forEach(function(d, i){
+    var bx = M.l + i * slot + (slot - barW) / 2;
+    var h = (d.dep / scale.max) * ih;
+    if(h > 0.5){
+      el('path', { d:vBarPath(bx, M.t + ih - h, barW, h, 4), 'class':'f-s1' }, svg);
+    }
+    var hit = el('rect', {
+      x:M.l + i * slot, y:M.t, width:slot, height:ih,
+      'class':'hit', tabindex:'0',
+      'aria-label': monthLabel(d.m) + ' 折旧 ' + fmtMoney(d.dep)
+    }, svg);
+    bindTip(hit, function(){
+      return {
+        title: monthLabel(d.m),
+        rows: [{ color:cssVar('--s1'), label:'折旧额', value:fmtMoney(d.dep) }]
+      };
+    });
+    if(i % 3 === 0 || i === n - 1){
+      textEl(svg, M.l + i * slot + slot / 2, H - 12, monthShort(d.m), 'tick-text', 'middle');
+    }
+  });
+
+  var md = data[maxIdx];
+  if(md.dep > 0){
+    var label = textEl(svg, M.l + maxIdx * slot + slot / 2, y(md.dep) - 8, fmtWan(md.dep), 'value-text', 'middle');
+    label.setAttribute('dominant-baseline', 'auto');
+  }
+
+  setTable($('table-monthly'),
+    ['月份','折旧额'],
+    data.map(function(d){ return [monthLabel(d.m), fmtMoney(d.dep)]; }),
+    [1]);
+}
+
+/* ---------- 图表：类别汇总 ---------- */
+
+function renderCategory(){
+  var host = $('chart-category');
+  var rows = categorySummary();
+  if(!rows.length){
+    showEmpty(host);
+    setTable($('table-category'), ['类别','原值','累计折旧','账面净值','折旧率'], [], [1,2,3,4]);
+    return;
+  }
+  var W = chartWidth(host, 480);
+  var labelW = 76;
+  var M = { t:8, r:86, b:28, l:labelW };
+  var barH = 20;
+  var rowH = 36;
+  var H = M.t + rows.length * rowH + M.b;
+  var iw = W - M.l - M.r;
+  var svg = makeSvg(host, W, H);
+  var scale = niceScale(Math.max.apply(null, rows.map(function(r){ return r.cost; })), 3);
+  function x(v){ return M.l + (v / scale.max) * iw; }
+
+  for(var v = 0; v <= scale.max + scale.step * 0.001; v += scale.step){
+    var gx = x(v);
+    el('line', { x1:gx, x2:gx, y1:M.t, y2:H - M.b + 2, 'class': v === 0 ? 'axis-line' : 'grid-line' }, svg);
+    textEl(svg, gx, H - 10, fmtAxis(v), 'tick-text', 'middle');
+  }
+
+  rows.forEach(function(r, i){
+    var yy = M.t + i * rowH;
+    textEl(svg, M.l - 12, yy + barH / 2 + 4, r.category, 'label-text', 'end');
+    var barW = (r.cost / scale.max) * iw;
+    var netW = (r.net / scale.max) * iw;
+    var accumW = barW - netW - 2;
+    if(netW > 0.5){
+      el('rect', { x:M.l, y:yy, width:netW, height:barH, rx:4, 'class':'f-s1' }, svg);
+    }
+    if(accumW > 0.5){
+      el('rect', { x:M.l + netW + 2, y:yy, width:accumW, height:barH, rx:4, 'class':'f-s2' }, svg);
+    }
+    textEl(svg, M.l + barW + 8, yy + barH / 2 + 4, fmtWan(r.cost), 'value-text', 'start');
+
+    var hit = el('rect', {
+      x:M.l, y:yy - 6, width:iw, height:barH + 12,
+      'class':'hit', tabindex:'0',
+      'aria-label': r.category + ' 原值 ' + fmtMoney(r.cost) + '，净值 ' + fmtMoney(r.net)
+    }, svg);
+    bindTip(hit, function(){
+      return {
+        title: r.category,
+        rows: [
+          { color:cssVar('--s1'), label:'账面净值', value:fmtMoney(r.net) },
+          { color:cssVar('--s2'), label:'累计折旧', value:fmtMoney(r.accum) },
+          { label:'原值合计', value:fmtMoney(r.cost) },
+          { label:'折旧率', value:r.cost ? fmtPct(r.accum / r.cost) : '0.0%' }
+        ]
+      };
+    });
+  });
+
+  renderLegend($('legend-category'), [
+    { label:'账面净值', color:cssVar('--s1') },
+    { label:'累计折旧', color:cssVar('--s2') }
+  ]);
+
+  setTable($('table-category'),
+    ['类别','原值','累计折旧','账面净值','折旧率'],
+    rows.map(function(r){
+      return [r.category, fmtMoney(r.cost), fmtMoney(r.accum), fmtMoney(r.net), r.cost ? fmtPct(r.accum / r.cost) : '0.0%'];
+    }),
+    [1,2,3,4]);
+}
+
+/* ---------- 图表：部门分摊 ---------- */
+
+function renderDept(){
+  var host = $('chart-dept');
+  var rows = deptSummary();
+  if(!rows.length){
+    showEmpty(host);
+    setTable($('table-dept'), ['部门','本月折旧','占比'], [], [1,2]);
+    return;
+  }
+  var total = rows.reduce(function(s, r){ return s + r.monthly; }, 0);
+  var W = chartWidth(host, 480);
+  var labelW = 64;
+  var M = { t:8, r:86, b:28, l:labelW };
+  var barH = 20;
+  var rowH = 36;
+  var H = M.t + rows.length * rowH + M.b;
+  var iw = W - M.l - M.r;
+  var svg = makeSvg(host, W, H);
+  var scale = niceScale(Math.max.apply(null, rows.map(function(r){ return r.monthly; })), 3);
+  function x(v){ return M.l + (v / scale.max) * iw; }
+
+  for(var v = 0; v <= scale.max + scale.step * 0.001; v += scale.step){
+    var gx = x(v);
+    el('line', { x1:gx, x2:gx, y1:M.t, y2:H - M.b + 2, 'class': v === 0 ? 'axis-line' : 'grid-line' }, svg);
+    textEl(svg, gx, H - 10, fmtAxis(v), 'tick-text', 'middle');
+  }
+
+  rows.forEach(function(r, i){
+    var yy = M.t + i * rowH;
+    textEl(svg, M.l - 12, yy + barH / 2 + 4, r.dept, 'label-text', 'end');
+    var barW = (r.monthly / scale.max) * iw;
+    if(barW > 0.5){
+      el('path', { d:hBarPath(M.l, yy, barW, barH, 4), 'class':'f-s1' }, svg);
+    }
+    textEl(svg, M.l + barW + 8, yy + barH / 2 + 4, fmtWan(r.monthly), 'value-text', 'start');
+
+    var hit = el('rect', {
+      x:M.l, y:yy - 6, width:iw, height:barH + 12,
+      'class':'hit', tabindex:'0',
+      'aria-label': r.dept + ' 本月折旧 ' + fmtMoney(r.monthly)
+    }, svg);
+    bindTip(hit, function(){
+      return {
+        title: r.dept,
+        rows: [
+          { color:cssVar('--s1'), label:'本月折旧', value:fmtMoney(r.monthly) },
+          { label:'占本月比例', value: total ? fmtPct(r.monthly / total) : '0.0%' }
+        ]
+      };
+    });
+  });
+
+  setTable($('table-dept'),
+    ['部门','本月折旧','占比'],
+    rows.map(function(r){
+      return [r.dept, fmtMoney(r.monthly), total ? fmtPct(r.monthly / total) : '0.0%'];
+    }),
+    [1,2]);
+}
+
+/* ---------- 预警 ---------- */
+
+function statusChip(c){
+  var span = document.createElement('span');
+  span.className = 'chip';
+  var dot = document.createElement('span');
+  dot.className = 'dot';
+  var label;
+  if(c.remain <= 0){
+    span.className += ' critical';
+    label = '本月最后一期';
+  }else if(c.remain <= 3){
+    span.className += ' critical';
+    label = c.remain + ' 个月内到期';
+  }else{
+    span.className += ' warning';
+    label = c.remain + ' 个月内到期';
+  }
+  span.appendChild(dot);
+  span.appendChild(document.createTextNode(label));
+  return span;
+}
+
+function renderWarnings(){
+  var body = $('warningBody');
+  body.replaceChildren();
+  var list = dueAssets();
+  $('dueBadgeText').textContent = list.length + ' 项';
+
+  if(!list.length){
+    var p = document.createElement('p');
+    p.className = 'chart-empty';
+    p.textContent = '未来 6 个月内没有资产提完折旧。';
+    body.appendChild(p);
+    return;
+  }
+
+  var wrap = document.createElement('div');
+  wrap.className = 'table-wrap';
+  var table = document.createElement('table');
+  table.className = 'ledger';
+  table.style.minWidth = '860px';
+  var headers = ['资产','类别','部门','入账日期','已提 / 总月数','剩余','账面净值','状态'];
+  var thead = document.createElement('thead');
+  var tr = document.createElement('tr');
+  headers.forEach(function(h){ var th = document.createElement('th'); th.textContent = h; tr.appendChild(th); });
+  thead.appendChild(tr);
+  table.appendChild(thead);
+
+  var tbody = document.createElement('tbody');
+  list.forEach(function(a){
+    var c = calcAsset(a);
+    var row = document.createElement('tr');
+    row.addEventListener('click', function(){
+      selectedId = a.id;
+      renderLedger();
+      navigateTo('s-detail');
+    });
+
+    var nameTd = document.createElement('td');
+    var strong = document.createElement('strong');
+    strong.style.fontWeight = '600';
+    strong.style.color = 'var(--ink)';
+    strong.textContent = a.name;
+    var code = document.createElement('span');
+    code.style.color = 'var(--muted)';
+    code.style.marginLeft = '8px';
+    code.textContent = a.code;
+    nameTd.appendChild(strong);
+    nameTd.appendChild(code);
+    row.appendChild(nameTd);
+
+    [a.category, a.dept, a.date, c.elapsed + ' / ' + c.lifeM + ' 个月'].forEach(function(v){
+      var td = document.createElement('td');
+      td.textContent = v;
+      row.appendChild(td);
+    });
+
+    var remainTd = document.createElement('td');
+    remainTd.className = 'num';
+    remainTd.textContent = c.remain === 0 ? '本月' : c.remain + ' 个月';
+    row.appendChild(remainTd);
+
+    var netTd = document.createElement('td');
+    netTd.className = 'num';
+    netTd.textContent = fmtMoney(c.net);
+    row.appendChild(netTd);
+
+    var stTd = document.createElement('td');
+    stTd.appendChild(statusChip(c));
+    row.appendChild(stTd);
+
+    tbody.appendChild(row);
+  });
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  body.appendChild(wrap);
+}
+
+/* ---------- 单资产三法对比 ---------- */
+
+function renderDetail(){
+  var list = filteredAssets().slice().sort(function(a, b){
+    return String(a.code).localeCompare(String(b.code), 'zh');
+  });
+  var sel = $('detailSelect');
+  sel.replaceChildren();
+
+  if(!list.length){
+    sel.disabled = true;
+    $('detailMeta').textContent = '当前筛选条件下没有资产。';
+    $('methodSummary').replaceChildren();
+    $('legend-methods').replaceChildren();
+    showEmpty($('chart-methods'), '当前筛选条件下没有资产');
+    $('table-methods').replaceChildren();
+    return;
+  }
+  sel.disabled = false;
+
+  list.forEach(function(a){
+    var o = document.createElement('option');
+    o.value = a.id;
+    o.textContent = a.code + ' · ' + a.name;
+    sel.appendChild(o);
+  });
+
+  var current = list.filter(function(a){ return a.id === selectedId; })[0];
+  if(!current){
+    current = list.reduce(function(best, a){ return num(a.cost) > num(best.cost) ? a : best; }, list[0]);
+  }
+  selectedId = current.id;
+  sel.value = current.id;
+
+  var a = current;
+  $('detailMeta').replaceChildren();
+  var metaParts = [
+    ['编号', a.code], ['名称', a.name], ['类别', a.category], ['部门', a.dept],
+    ['原值', fmtMoney(a.cost)], ['入账', a.date],
+    ['年限', a.years + ' 年'], ['残值率', a.salvageRate + '%']
+  ];
+  metaParts.forEach(function(p, i){
+    if(i) $('detailMeta').appendChild(document.createTextNode(' · '));
+    var lbl = document.createElement('span');
+    lbl.style.color = 'var(--muted)';
+    lbl.textContent = p[0] + ' ';
+    var val = document.createElement('strong');
+    val.textContent = p[1];
+    $('detailMeta').appendChild(lbl);
+    $('detailMeta').appendChild(val);
+  });
+
+  var summary = $('methodSummary');
+  summary.replaceChildren();
+  var totals = {};
+  METHODS.forEach(function(m){
+    var t = methodTotals(a, m.key);
+    totals[m.key] = t;
+    var box = document.createElement('div');
+    box.className = 'method-box';
+    var name = document.createElement('div');
+    name.className = 'method-name';
+    var dot = document.createElement('span');
+    dot.className = 'dot';
+    dot.style.background = cssVar(m.colorVar);
+    name.appendChild(dot);
+    name.appendChild(document.createTextNode(m.name));
+    var cap = document.createElement('div');
+    cap.className = 'method-net-label';
+    cap.textContent = '当前账面净值';
+    var net = document.createElement('div');
+    net.className = 'method-net';
+    net.textContent = fmtMoney(t.net);
+    var sub = document.createElement('div');
+    sub.className = 'method-sub';
+    sub.textContent = '累计折旧 ' + fmtMoney(t.accum) + ' · 本月 ' + fmtMoney(t.monthly);
+    box.appendChild(name);
+    box.appendChild(cap);
+    box.appendChild(net);
+    box.appendChild(sub);
+    summary.appendChild(box);
+  });
+
+  renderLegend($('legend-methods'), METHODS.map(function(m){
+    return { label:m.name, color:cssVar(m.colorVar) };
+  }));
+
+  var schedules = METHODS.map(function(m){ return { m:m, rows:yearlySch(a, m.key) }; });
+  var n = Math.max.apply(null, schedules.map(function(s){ return s.rows.length; }));
+
+  var host = $('chart-methods');
+  var W = chartWidth(host, 720);
+  var H = 300;
+  var M = { t:16, r:16, b:34, l:56 };
+  var iw = W - M.l - M.r;
+  var ih = H - M.t - M.b;
+  var svg = makeSvg(host, W, H);
+
+  var depMax = 0;
+  schedules.forEach(function(s){
+    s.rows.forEach(function(r){ if(r.dep > depMax) depMax = r.dep; });
+  });
+  var scale = niceScale(depMax, 4);
+  drawYAxis(svg, M, iw, ih, scale);
+
+  var groupW = iw / n;
+  var inner = Math.min(groupW * 0.72, 3 * 24 + 4);
+  var barW = Math.max(3, Math.min(24, (inner - 4) / 3));
+  var colors = METHODS.map(function(m){ return cssVar(m.colorVar); });
+
+  for(var i = 0; i < n; i++){
+    var groupStart = M.l + i * groupW + (groupW - (barW * 3 + 4)) / 2;
+    var year = i + 1;
+    schedules.forEach(function(s, k){
+      var row = s.rows[i];
+      if(!row) return;
+      var h = (row.dep / scale.max) * ih;
+      var bx = groupStart + k * (barW + 2);
+      if(h > 0.4){
+        el('path', { d:vBarPath(bx, M.t + ih - h, barW, h, 4), 'class':'f-s' + (k + 1) }, svg);
+      }
+      var hit = el('rect', {
+        x:bx, y:M.t, width:barW, height:ih, 'class':'hit',
+        'aria-label': '第 ' + year + ' 年 ' + s.m.name + ' 折旧 ' + fmtMoney(row.dep)
+      }, svg);
+      bindTip(hit, function(){
+        return {
+          title: '第 ' + year + ' 年',
+          rows: schedules.map(function(ss, kk){
+            var rr = ss.rows[i];
+            return { color:colors[kk], label:ss.m.name, value: rr ? fmtMoney(rr.dep) : '—' };
+          })
+        };
+      });
+    });
+
+    if(n <= 10 || i % 2 === 0 || i === n - 1){
+      textEl(svg, M.l + i * groupW + groupW / 2, H - 12, '第 ' + year + ' 年', 'tick-text', 'middle');
+    }
+  }
+
+  setTable($('table-methods'),
+    ['折旧年度'].concat(METHODS.map(function(m){ return m.name; })),
+    schedules[0].rows.map(function(_, i){
+      return ['第 ' + (i + 1) + ' 年'].concat(schedules.map(function(s){
+        return s.rows[i] ? fmtMoney(s.rows[i].dep) : '—';
+      }));
+    }),
+    [1,2,3]);
+}
+
+/* ---------- 台账 ---------- */
+
+function remainingText(c){
+  if(CUR < c.start) return '未启用';
+  if(CUR > c.end) return '已提完';
+  if(c.remain === 0) return '本月';
+  return c.remain + ' 个月';
+}
+
+function ledgerRows(){
+  var list = filteredAssets().map(function(a){ return { a:a, c:calcAsset(a) }; });
+  var key = sort.key;
+  var dir = sort.dir;
+  list.sort(function(x, y){
+    var va, vb;
+    switch(key){
+      case 'cost': va = num(x.a.cost); vb = num(y.a.cost); break;
+      case 'years': va = num(x.a.years); vb = num(y.a.years); break;
+      case 'date': va = ym(x.a.date); vb = ym(y.a.date); break;
+      case 'monthly': va = x.c.monthly; vb = y.c.monthly; break;
+      case 'accum': va = x.c.accum; vb = y.c.accum; break;
+      case 'net': va = x.c.net; vb = y.c.net; break;
+      case 'remain': va = x.c.remain; vb = y.c.remain; break;
+      default:
+        va = String(x.a[key] || ''); vb = String(y.a[key] || '');
+        return va.localeCompare(vb, 'zh') * dir;
+    }
+    return (va - vb) * dir;
+  });
+  return list;
+}
+
+function renderLedger(){
+  var table = $('ledger');
+  table.replaceChildren();
+
+  var cols = [
+    { key:'code', label:'编号' },
+    { key:'name', label:'名称' },
+    { key:'category', label:'类别' },
+    { key:'dept', label:'部门' },
+    { key:'cost', label:'原值', num:true },
+    { key:'date', label:'入账日期' },
+    { key:'years', label:'年限', num:true },
+    { key:'monthly', label:'月折旧', num:true },
+    { key:'accum', label:'累计折旧', num:true },
+    { key:'net', label:'账面净值', num:true },
+    { key:'remain', label:'剩余', num:true }
+  ];
+
+  var thead = document.createElement('thead');
+  var tr = document.createElement('tr');
+  cols.forEach(function(col){
+    var th = document.createElement('th');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'sort-btn';
+    btn.appendChild(document.createTextNode(col.label));
+    var mark = document.createElement('span');
+    mark.className = 'sort-mark';
+    mark.textContent = sort.key === col.key ? (sort.dir > 0 ? '↑' : '↓') : '↕';
+    btn.appendChild(mark);
+    btn.addEventListener('click', function(){
+      if(sort.key === col.key){
+        sort.dir = -sort.dir;
+      }else{
+        sort.key = col.key;
+        sort.dir = (col.num || col.key === 'date') ? -1 : 1;
+      }
+      renderLedger();
+    });
+    th.appendChild(btn);
+    if(sort.key === col.key){
+      th.setAttribute('aria-sort', sort.dir > 0 ? 'ascending' : 'descending');
+    }
+    tr.appendChild(th);
+  });
+  var thOps = document.createElement('th');
+  thOps.textContent = '操作';
+  tr.appendChild(thOps);
+  thead.appendChild(tr);
+  table.appendChild(thead);
+
+  var tbody = document.createElement('tbody');
+  var rows = ledgerRows();
+
+  if(!rows.length){
+    var emptyTr = document.createElement('tr');
+    var emptyTd = document.createElement('td');
+    emptyTd.colSpan = cols.length + 1;
+    emptyTd.style.textAlign = 'center';
+    emptyTd.style.color = 'var(--muted)';
+    emptyTd.style.padding = '28px 10px';
+    emptyTd.textContent = '当前筛选条件下没有资产';
+    emptyTr.appendChild(emptyTd);
+    tbody.appendChild(emptyTr);
+  }
+
+  rows.forEach(function(item){
+    var a = item.a;
+    var c = item.c;
+    var row = document.createElement('tr');
+    if(a.id === selectedId) row.className = 'selected';
+    row.addEventListener('click', function(){
+      selectedId = a.id;
+      var prev = tbody.querySelector('tr.selected');
+      if(prev) prev.classList.remove('selected');
+      row.classList.add('selected');
+      navigateTo('s-detail');
+    });
+
+    var nameTd = document.createElement('td');
+    nameTd.textContent = a.name;
+    nameTd.title = a.name;
+    nameTd.style.color = 'var(--ink)';
+
+    var cells = [
+      ['td', a.code],
+      [nameTd],
+      ['td', a.category],
+      ['td', a.dept],
+      ['td', fmtMoney(a.cost), 'num'],
+      ['td', a.date],
+      ['td', a.years + ' 年', 'num'],
+      ['td', fmtMoney(c.monthly), 'num'],
+      ['td', fmtMoney(c.accum), 'num'],
+      ['td', fmtMoney(c.net), 'num'],
+      ['td', remainingText(c), 'num']
+    ];
+
+    cells.forEach(function(cell){
+      if(cell[0] === 'td' && typeof cell[1] === 'string'){
+        var td = document.createElement('td');
+        if(cell[2]) td.className = cell[2];
+        td.textContent = cell[1];
+        row.appendChild(td);
+      }else{
+        row.appendChild(cell[0]);
+      }
+    });
+
+    var ops = document.createElement('td');
+    var wrap = document.createElement('div');
+    wrap.className = 'row-actions';
+    var edit = document.createElement('button');
+    edit.type = 'button';
+    edit.className = 'text-btn';
+    edit.textContent = '编辑';
+    edit.addEventListener('click', function(e){
+      e.stopPropagation();
+      openDialog(a);
+    });
+    var del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'text-btn danger';
+    del.textContent = '删除';
+    del.addEventListener('click', function(e){
+      e.stopPropagation();
+      deleteAsset(a.id);
+    });
+    wrap.appendChild(edit);
+    wrap.appendChild(del);
+    ops.appendChild(wrap);
+    row.appendChild(ops);
+
+    tbody.appendChild(row);
+  });
+
+  table.appendChild(tbody);
+}
+
+/* ---------- 概览 ---------- */
+
+function renderOverview(){
+  var list = filteredAssets();
+  var active = list.filter(function(a){ return ym(a.date) <= CUR; });
+  var cost = 0, accum = 0, net = 0, monthly = 0, due = 0, done = 0;
+
+  active.forEach(function(a){
+    var c = calcAsset(a);
+    cost += c.cost;
+    accum += c.accum;
+    net += c.net;
+    if(isInService(c)) monthly += c.monthly;
+    if(isInService(c) && c.remain <= 6) due++;
+    if(CUR > c.end) done++;
+  });
+
+  $('kNet').textContent = fmtMoney(net);
+  if($('tocNet')) $('tocNet').textContent = fmtMoney(net);
+  if($('tocMeta')) $('tocMeta').textContent = active.length + ' 项资产 · 截至 ' + formatDate(AS_OF);
+  $('kCost').textContent = fmtMoney(cost);
+  $('kAccum').textContent = fmtMoney(accum);
+  $('kMonthly').textContent = fmtMoney(monthly);
+  $('kDue').textContent = String(due);
+  $('kCount').textContent = active.length + ' 项资产 · ' + categorySummary().length + ' 个类别';
+  $('kDueSub').textContent = '项资产 · 已提完 ' + done + ' 项';
+
+  var rate = cost > 0 ? accum / cost : 0;
+  $('kRate').textContent = fmtPct(rate);
+  $('meterFill').style.width = (rate * 100).toFixed(1) + '%';
+
+  var delta = 0;
+  var t = trendData(2);
+  if(t.length === 2) delta = t[1].net - t[0].net;
+  $('kDelta').textContent = '较上月 ' + (delta >= 0 ? '+' : '−') + fmtMoney(Math.abs(delta));
+
+  $('filterNote').textContent = active.length + ' / ' + assets.length + ' 项资产';
+
+  var insight = '';
+  if(active.length){
+    var dueList = dueAssets();
+    var cats = [];
+    dueList.forEach(function(a){
+      if(cats.indexOf(a.category) < 0) cats.push(a.category);
+    });
+    insight = '共 ' + active.length + ' 项资产，原值 ' + fmtMoney(cost) +
+      '，累计折旧率 ' + fmtPct(rate) + '；未来 6 个月有 ' + due + ' 项资产提完折旧' +
+      (cats.length ? '，涉及 ' + cats.join('、') : '') + '。';
+  }else{
+    insight = '当前筛选条件下没有资产。';
+  }
+  $('insightText').textContent = insight;
+
+  if($('homeMonthly')) $('homeMonthly').textContent = fmtMoney(monthly);
+  if($('homeDue')) $('homeDue').textContent = due + ' 项';
+  if($('homeAssets')) $('homeAssets').textContent = active.length + ' 项';
+  if($('homeBreakdown')){
+    var deptCount = [];
+    active.forEach(function(a){ if(deptCount.indexOf(a.dept) < 0) deptCount.push(a.dept); });
+    $('homeBreakdown').textContent = categorySummary().length + ' 类 · ' + deptCount.length + ' 部门';
+  }
+}
+
+/* ---------- 筛选与数据表 ---------- */
+
+function fillSelect(sel, allLabel, values, current){
+  sel.replaceChildren();
+  var o = document.createElement('option');
+  o.value = 'all';
+  o.textContent = allLabel;
+  sel.appendChild(o);
+  values.forEach(function(v){
+    var op = document.createElement('option');
+    op.value = v;
+    op.textContent = v;
+    sel.appendChild(op);
+  });
+  sel.value = current;
+}
+
+function rebuildFilters(){
+  var depts = [], cats = [];
+  assets.forEach(function(a){
+    if(a.dept && depts.indexOf(a.dept) < 0) depts.push(a.dept);
+    if(a.category && cats.indexOf(a.category) < 0) cats.push(a.category);
+  });
+  depts.sort(function(a, b){ return a.localeCompare(b, 'zh'); });
+  cats.sort(function(a, b){ return a.localeCompare(b, 'zh'); });
+
+  if(filters.dept !== 'all' && depts.indexOf(filters.dept) < 0) filters.dept = 'all';
+  if(filters.cat !== 'all' && cats.indexOf(filters.cat) < 0) filters.cat = 'all';
+
+  fillSelect($('fDept'), '全部部门', depts, filters.dept);
+  fillSelect($('fCat'), '全部类别', cats, filters.cat);
+  updateDatalists();
+}
+
+function fillDatalist(id, values){
+  var dl = $(id);
+  dl.replaceChildren();
+  values.forEach(function(v){
+    var o = document.createElement('option');
+    o.value = v;
+    dl.appendChild(o);
+  });
+}
+
+function updateDatalists(){
+  var cats = DEFAULT_CATS.slice();
+  var depts = DEFAULT_DEPTS.slice();
+  assets.forEach(function(a){
+    if(a.category && cats.indexOf(a.category) < 0) cats.push(a.category);
+    if(a.dept && depts.indexOf(a.dept) < 0) depts.push(a.dept);
+  });
+  fillDatalist('catList', cats);
+  fillDatalist('deptList', depts);
+}
+
+/* ---------- 弹窗与增删改 ---------- */
+
+function setFormValue(name, value){
+  var field = $('assetForm').elements.namedItem(name);
+  if(field) field.value = value;
+}
+
+function openDialog(asset){
+  editingId = asset ? asset.id : null;
+  var form = $('assetForm');
+  form.reset();
+  $('dialogTitle').textContent = asset ? '编辑资产' : '新增资产';
+
+  if(asset){
+    setFormValue('code', asset.code);
+    setFormValue('name', asset.name);
+    setFormValue('category', asset.category);
+    setFormValue('dept', asset.dept);
+    setFormValue('cost', asset.cost);
+    setFormValue('date', asset.date);
+    setFormValue('years', asset.years);
+    setFormValue('salvageRate', asset.salvageRate);
+  }else{
+    setFormValue('years', 5);
+    setFormValue('salvageRate', 5);
+    setFormValue('date', todayISO());
+  }
+
+  updateDatalists();
+  var dlg = $('editDialog');
+  if(typeof dlg.showModal === 'function') dlg.showModal();
+  setTimeout(function(){
+    var f = form.elements.namedItem('code');
+    if(f) f.focus();
+  }, 30);
+}
+
+function closeDialog(){
+  var dlg = $('editDialog');
+  if(dlg.open) dlg.close();
+}
+
+function deleteAsset(id){
+  var a = assets.filter(function(x){ return x.id === id; })[0];
+  if(!a) return;
+  if(!confirm('删除资产「' + a.name + '」？此操作不可撤销。')) return;
+  assets = assets.filter(function(x){ return x.id !== id; });
+  if(selectedId === id) selectedId = null;
+  saveAssets();
+  rebuildFilters();
+  renderAll();
+}
+
+function handleSubmit(e){
+  e.preventDefault();
+  var form = $('assetForm');
+  var fd = new FormData(form);
+  var data = {
+    code: String(fd.get('code') || '').trim(),
+    name: String(fd.get('name') || '').trim(),
+    category: String(fd.get('category') || '').trim(),
+    dept: String(fd.get('dept') || '').trim(),
+    cost: Number(fd.get('cost')),
+    date: String(fd.get('date') || ''),
+    years: Number(fd.get('years')),
+    salvageRate: Number(fd.get('salvageRate'))
+  };
+
+  if(!data.code || !data.name || !data.category || !data.dept){
+    alert('请填写编号、名称、类别和使用部门。');
+    return;
+  }
+  if(!isFinite(data.cost) || data.cost <= 0){
+    alert('原值需大于 0。');
+    return;
+  }
+  if(!/^\d{4}-\d{2}$/.test(data.date.slice(0, 7))){
+    alert('请选择有效的入账日期。');
+    return;
+  }
+  if(!isFinite(data.years) || data.years < 1 || data.years > 50){
+    alert('使用年限需在 1 至 50 年之间。');
+    return;
+  }
+  if(!isFinite(data.salvageRate) || data.salvageRate < 0 || data.salvageRate > 100){
+    alert('残值率需在 0 至 100 之间。');
+    return;
+  }
+
+  var dup = assets.some(function(a){
+    return a.code === data.code && a.id !== editingId;
+  });
+  if(dup){
+    alert('资产编号「' + data.code + '」已存在。');
+    return;
+  }
+
+  if(editingId){
+    for(var i = 0; i < assets.length; i++){
+      if(assets[i].id === editingId){
+        assets[i] = Object.assign({}, assets[i], data);
+        break;
+      }
+    }
+  }else{
+    data.id = uid();
+    assets.push(data);
+  }
+
+  saveAssets();
+  rebuildFilters();
+  closeDialog();
+  renderAll();
+}
+
+/* ---------- 导出 ---------- */
+
+function csvCell(v){
+  var s = String(v);
+  if(/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+
+function exportCSV(){
+  var head = ['编号','名称','类别','部门','原值(元)','入账日期','使用年限(年)','残值率(%)','月折旧(元)','累计折旧(元)','账面净值(元)','剩余月数'];
+  var lines = [head.join(',')];
+  filteredAssets().forEach(function(a){
+    var c = calcAsset(a);
+    lines.push([
+      a.code, a.name, a.category, a.dept, num(a.cost), a.date, num(a.years), num(a.salvageRate),
+      Math.round(c.monthly), Math.round(c.accum), Math.round(c.net), c.remain
+    ].map(csvCell).join(','));
+  });
+  var blob = new Blob(['﻿' + lines.join('\r\n')], { type:'text/csv;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement('a');
+  link.href = url;
+  link.download = '固定资产折旧台账-' + formatDate(AS_OF) + '.csv';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1200);
+}
+
+/* ---------- 主题 ---------- */
+
+function isDark(){
+  var t = document.documentElement.getAttribute('data-theme');
+  if(t) return t === 'dark';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+function updateThemeButton(){
+  $('btnTheme').textContent = isDark() ? '浅色模式' : '深色模式';
+}
+
+function toggleTheme(){
+  var next = isDark() ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try{ localStorage.setItem(THEME_KEY, next); }catch(e){}
+  updateThemeButton();
+  renderAll();
+}
+
+/* ---------- 语音播报 ---------- */
+
+var voiceEnabled = true;
+var zhVoice = null;
+
+function pickZhVoice(){
+  try{
+    var list = window.speechSynthesis.getVoices() || [];
+    for(var i = 0; i < list.length; i++){
+      if(/^zh([-_]|$)/i.test(list[i].lang || '')){
+        zhVoice = list[i];
+        return;
+      }
+    }
+    zhVoice = null;
+  }catch(e){ zhVoice = null; }
+}
+
+// 金额转成适合朗读的说法：不带货币符号，万元以内读「元」
+function spkMoney(v){
+  var n = Math.round(num(v));
+  if(Math.abs(n) >= 10000){
+    var w = n / 10000;
+    var s = w >= 100 ? w.toFixed(0) : (w >= 10 ? w.toFixed(1) : w.toFixed(2));
+    if(s.indexOf('.') >= 0) s = s.replace(/0+$/, '').replace(/\.$/, '');
+    return s + ' 万元';
+  }
+  return n + ' 元';
+}
+
+function spkFilter(){
+  var bits = [];
+  if(filters.dept !== 'all') bits.push(filters.dept);
+  if(filters.cat !== 'all') bits.push(filters.cat);
+  return bits.length ? '当前筛选为' + bits.join('、') + '。' : '';
+}
+
+// 根据当前数据生成每个页面的播报稿
+function narrationFor(id){
+  var prefix = spkFilter();
+  var active = filteredAssets().filter(function(a){ return ym(a.date) <= CUR; });
+  var noData = prefix + '当前筛选条件下没有资产。';
+
+  if(id === 's-note'){
+    return '计算口径。折旧从入账的次月起按月计提，提满使用年限。平均年限法把原值减去残值后平均分摊到每个月。示例数据统一按 5% 预留残值。税法最低折旧年限：电子设备 3 年，运输工具 4 年，器具家具 5 年，机器设备 10 年，房屋建筑物 20 年。';
+  }
+  if(!active.length) return noData;
+
+  if(id === 's-overview'){
+    var cost = 0, accum = 0, net = 0, monthly = 0, due = 0;
+    active.forEach(function(a){
+      var c = calcAsset(a);
+      cost += c.cost;
+      accum += c.accum;
+      net += c.net;
+      if(isInService(c)) monthly += c.monthly;
+      if(isInService(c) && c.remain <= 6) due++;
+    });
+    return prefix + '总览。共 ' + active.length + ' 项资产，原值 ' + spkMoney(cost) +
+      '，累计折旧 ' + spkMoney(accum) + '，账面净值 ' + spkMoney(net) +
+      '，累计折旧率 ' + (cost > 0 ? fmtPct(accum / cost) : '0%') +
+      '。本月计提折旧 ' + spkMoney(monthly) + '。未来 6 个月内有 ' + due + ' 项资产提完折旧。';
+  }
+
+  if(id === 's-trend'){
+    var t = trendData(24);
+    var first = t[0];
+    var last = t[t.length - 1];
+    var deps = trendData(12).map(function(r){ return r.dep; }).filter(function(v){ return v > 0; });
+    var low = deps.length ? Math.min.apply(null, deps) : 0;
+    var high = deps.length ? Math.max.apply(null, deps) : 0;
+    return prefix + '折旧趋势。近 24 个月，账面净值由 ' + spkMoney(first.net) +
+      '变为 ' + spkMoney(last.net) + '，累计折旧从 ' + spkMoney(first.accum) +
+      '增加到 ' + spkMoney(last.accum) + '。近 12 个月月度折旧在 ' +
+      spkMoney(low) + '至 ' + spkMoney(high) + '之间。';
+  }
+
+  if(id === 's-breakdown'){
+    var cats = categorySummary();
+    var depts = deptSummary();
+    var text = prefix + '分类与部门。共 ' + cats.length + ' 个资产类别、' + depts.length + ' 个使用部门。';
+    if(cats[0]) text += '原值最高的是' + cats[0].category + '，' + spkMoney(cats[0].cost) + '。';
+    if(depts[0]) text += '本月折旧最多的是' + depts[0].dept + '，' + spkMoney(depts[0].monthly) + '。';
+    return text;
+  }
+
+  if(id === 's-warning'){
+    var dueList = dueAssets();
+    if(!dueList.length) return prefix + '更换预警。未来 6 个月内没有资产提完折旧。';
+    var dc = calcAsset(dueList[0]);
+    var when = dc.remain <= 0 ? '本月提完' : '还剩 ' + dc.remain + ' 个月';
+    return prefix + '更换预警。未来 6 个月内有 ' + dueList.length + ' 项资产提完折旧。最近的是' +
+      dueList[0].name + '，' + when + '，当前账面净值 ' + spkMoney(dc.net) +
+      '。点击表格中的行可以查看它的三种折旧法对比。';
+  }
+
+  if(id === 's-detail'){
+    var cur = active.filter(function(a){ return a.id === selectedId; })[0] || active[0];
+    var mc = calcAsset(cur);
+    var parts = METHODS.map(function(m){
+      var mt = methodTotals(cur, m.key);
+      return m.name + '账面净值 ' + spkMoney(mt.net);
+    });
+    return prefix + '三法对比。当前资产是 ' + cur.code + ' ' + cur.name + '，原值 ' +
+      spkMoney(cur.cost) + '，已计提 ' + mc.elapsed + ' 个月。' + parts.join('；') + '。';
+  }
+
+  if(id === 's-ledger'){
+    var rows = ledgerRows();
+    if(!rows.length) return prefix + '资产台账。当前筛选条件下没有资产。';
+    var lc = 0, ln = 0;
+    rows.forEach(function(r){ lc += r.c.cost; ln += r.c.net; });
+    return prefix + '资产台账。共 ' + rows.length + ' 项资产，原值合计 ' + spkMoney(lc) +
+      '，账面净值合计 ' + spkMoney(ln) + '。当前列表第一项是 ' + rows[0].a.name +
+      '。点击任意一行可以查看三种折旧法的对比。';
+  }
+
+  return '';
+}
+
+function announceSection(id){
+  if(!voiceEnabled || !('speechSynthesis' in window)) return;
+  var text = narrationFor(id);
+  if(!text) return;
+  try{
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-CN';
+    u.rate = 1.05;
+    u.pitch = 1;
+    if(zhVoice) u.voice = zhVoice;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+function updateVoiceButton(){
+  var btn = $('btnVoice');
+  if(!btn) return;
+  btn.textContent = voiceEnabled ? '语音播报：开' : '语音播报：关';
+  btn.setAttribute('aria-pressed', voiceEnabled ? 'true' : 'false');
+  btn.classList.toggle('voice-on', voiceEnabled);
+}
+
+function setVoice(on, announce){
+  voiceEnabled = !!on;
+  try{ localStorage.setItem(VOICE_KEY, voiceEnabled ? 'on' : 'off'); }catch(e){}
+  updateVoiceButton();
+  if(!voiceEnabled && 'speechSynthesis' in window){
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+  }
+  if(voiceEnabled && announce) announceSection(currentSection);
+}
+
+function initVoice(){
+  var supported = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+  var saved = null;
+  try{ saved = localStorage.getItem(VOICE_KEY); }catch(e){}
+  voiceEnabled = saved !== 'off';
+
+  var btn = $('btnVoice');
+  if(!supported){
+    voiceEnabled = false;
+    if(btn){
+      btn.disabled = true;
+      btn.textContent = '浏览器不支持语音';
+      btn.removeAttribute('aria-pressed');
+      btn.classList.remove('voice-on');
+    }
+    return;
+  }
+
+  pickZhVoice();
+  try{ window.speechSynthesis.addEventListener('voiceschanged', pickZhVoice); }
+  catch(e){ window.speechSynthesis.onvoiceschanged = pickZhVoice; }
+
+  updateVoiceButton();
+  if(btn) btn.addEventListener('click', function(){ setVoice(!voiceEnabled, true); });
+
+  window.addEventListener('pagehide', function(){
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+  });
+}
+
+/* ---------- 页面切换 ---------- */
+
+var SECTIONS = ['s-overview','s-trend','s-breakdown','s-warning','s-detail','s-ledger','s-note'];
+var PAGES = {
+  's-overview':  { title:'总览',       sub:'全部资产的账面净值、原值与本月折旧' },
+  's-trend':     { title:'折旧趋势',   sub:'近 24 个月资产结构变化与近 12 个月折旧费用' },
+  's-breakdown': { title:'分类与部门', sub:'按资产类别与使用部门汇总原值、净值与折旧分摊' },
+  's-warning':   { title:'更换预警',   sub:'未来 6 个月内提完折旧的资产，按剩余月数排序' },
+  's-detail':    { title:'三法对比',   sub:'单个资产在三种折旧法下的年度折旧差异' },
+  's-ledger':    { title:'资产台账',   sub:'点击行查看三法对比；数据仅保存在本机浏览器' },
+  's-note':      { title:'计算口径',   sub:'折旧规则、残值率与税法最低折旧年限' }
+};
+var currentSection = 's-overview';
+var applySection = function(){};
+
+function renderSectionCharts(id){
+  if(id === 's-detail'){ renderDetail(); return; }
+  if(id === 's-trend'){ renderStructure(); renderMonthly(); }
+  else if(id === 's-breakdown'){ renderCategory(); renderDept(); }
+}
+
+function renderCharts(id){
+  if(id === 's-trend'){ renderStructure(); renderMonthly(); }
+  else if(id === 's-breakdown'){ renderCategory(); renderDept(); }
+}
+
+function navigateTo(id){
+  if(location.hash === '#' + id) applySection(true);
+  else location.hash = id;
+}
+
+function initNav(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('[data-target]'));
+  var views = SECTIONS.map(function(id){ return document.getElementById(id); });
+
+  function apply(speak){
+    var id = location.hash ? location.hash.slice(1) : 's-overview';
+    if(SECTIONS.indexOf(id) < 0) id = 's-overview';
+    currentSection = id;
+
+    views.forEach(function(v){ if(v) v.hidden = v.id !== id; });
+
+    links.forEach(function(l){
+      var on = l.getAttribute('data-target') === id;
+      l.classList.toggle('is-active', on);
+      if(l.classList.contains('nav-item')){
+        if(on) l.setAttribute('aria-current', 'page');
+        else l.removeAttribute('aria-current');
+      }
+    });
+
+    var meta = PAGES[id];
+    $('pageTitle').textContent = meta.title;
+    $('pageSub').textContent = meta.sub;
+    document.title = '固定资产折旧分析 · ' + meta.title;
+
+    var main = $('main');
+    if(main) main.scrollTop = 0;
+    if(window.pageYOffset) window.scrollTo(0, 0);
+    // 深链接加载时浏览器会在脚本之后把锚点滚进视口，再兜底回到顶部
+    setTimeout(function(){
+      if(main) main.scrollTop = 0;
+      if(window.pageYOffset) window.scrollTo(0, 0);
+    }, 0);
+
+    renderSectionCharts(id);
+    if(speak) announceSection(id);
+  }
+
+  applySection = apply;
+
+  links.forEach(function(l){
+    l.addEventListener('click', function(e){
+      var id = l.getAttribute('data-target');
+      if(!id) return;
+      e.preventDefault();
+      if(location.hash === '#' + id) apply(true);
+      else location.hash = id;
+    });
+  });
+
+  // 初次加载不自动朗读（浏览器通常要求先有用户操作），之后切页都会播报
+  window.addEventListener('hashchange', function(){ apply(true); });
+  apply(false);
+}
+
+/* ---------- 初始化 ---------- */
+
+function renderAll(){
+  renderOverview();
+  renderWarnings();
+  renderLedger();
+  renderDetail();
+  updateNavCounts();
+  renderCharts(currentSection);
+}
+
+function updateNavCounts(){
+  var list = filteredAssets();
+  var cats = [];
+  list.forEach(function(a){ if(cats.indexOf(a.category) < 0) cats.push(a.category); });
+  var map = {
+    's-overview': list.length,
+    's-trend': 24,
+    's-breakdown': cats.length,
+    's-warning': dueAssets().length,
+    's-detail': METHODS.length,
+    's-ledger': list.length,
+    's-note': 5
+  };
+  document.querySelectorAll('.nav-count').forEach(function(el){
+    var key = el.getAttribute('data-for');
+    if(key in map) el.textContent = String(map[key]);
+  });
+}
+
+function init(){
+  $('asOfText').textContent = formatDate(AS_OF);
+
+  try{
+    var savedTheme = localStorage.getItem(THEME_KEY);
+    if(savedTheme === 'dark' || savedTheme === 'light'){
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+  }catch(e){}
+  updateThemeButton();
+  initVoice();
+
+  rebuildFilters();
+  renderAll();
+  initNav();
+
+  $('fDept').addEventListener('change', function(e){
+    filters.dept = e.target.value;
+    renderAll();
+  });
+  $('fCat').addEventListener('change', function(e){
+    filters.cat = e.target.value;
+    renderAll();
+  });
+  $('detailSelect').addEventListener('change', function(e){
+    selectedId = e.target.value;
+    renderDetail();
+  });
+
+  $('btnTheme').addEventListener('click', toggleTheme);
+  $('btnPrint').addEventListener('click', function(){ window.print(); });
+  $('btnExport').addEventListener('click', exportCSV);
+  $('btnAdd').addEventListener('click', function(){ openDialog(null); });
+  $('btnReset').addEventListener('click', function(){
+    if(!confirm('恢复内置示例数据？当前编辑与新增的资产会被清除。')) return;
+    assets = clone(SAMPLE);
+    selectedId = null;
+    saveAssets();
+    rebuildFilters();
+    renderAll();
+  });
+
+  $('assetForm').addEventListener('submit', handleSubmit);
+  $('btnCancel').addEventListener('click', closeDialog);
+  $('btnCloseDialog').addEventListener('click', closeDialog);
+  $('editDialog').addEventListener('click', function(e){
+    if(e.target === $('editDialog')) closeDialog();
+  });
+
+  document.querySelectorAll('[data-toggle-table]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var card = btn.closest('.card');
+      var tv = card.querySelector('.table-view');
+      var host = card.querySelector('.chart-host');
+      var legend = card.querySelector('.legend');
+      var showTable = tv.hidden;
+      tv.hidden = !showTable;
+      host.hidden = showTable;
+      if(legend) legend.hidden = showTable;
+      btn.textContent = showTable ? '图表' : '表格';
+      btn.setAttribute('aria-pressed', String(showTable));
+      if(!showTable) renderAll();
+    });
+  });
+
+  var resizeTimer = null;
+  window.addEventListener('resize', function(){
+    if(resizeTimer) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(renderAll, 140);
+  });
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+}else{
+  init();
+}
+
+})();
+</script>
+</body>
+</html>
